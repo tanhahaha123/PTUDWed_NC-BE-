@@ -1,17 +1,18 @@
-const mysql=require('mysql');
-const promisyfy=require('util').promisify;
+const mysql = require('mysql');
+const promisyfy = require('util').promisify;
 
 const pool=mysql.createPool({
-    connectionLimit:100,
-    host:'99.000webhost.io',
+    connectionLimit: 100,
+    host: 'localhost',
     port:3306,
-    user:'id13624379_user',
-    password:'fc({C&>SmN88faPY',
-    database:'id13624379_banking'
+    user: 'root',
+    password: '123456',
+    database: 'banking'
 });
 
 const pool_query=promisyfy(pool.query).bind(pool);
 
 module.exports={
     load: sql=>pool_query(sql),
+    add: (entity, tableName) => pool_query(`insert into ${tableName} set ?`, entity),
 }

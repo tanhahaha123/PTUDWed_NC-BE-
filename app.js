@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
   });
 })
 
-app.use('/api/accounts', require('./Routes/account.route'));
+app.use('/api/accounts', require('./Routes/accounts.route'));
 
 app.use((req, res, next) => {
   res.status(404).send('NOT FOUND');
