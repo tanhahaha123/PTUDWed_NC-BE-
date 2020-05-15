@@ -1,5 +1,5 @@
-const mysql=require('mysql');
-const promisyfy=require('util').promisify;
+const mysql = require('mysql');
+const promisyfy = require('util').promisify;
 
 const pool=mysql.createPool({
     connectionLimit:100,
@@ -14,4 +14,5 @@ const pool_query=promisyfy(pool.query).bind(pool);
 
 module.exports={
     load: sql=>pool_query(sql),
+    add: (entity, tableName) => pool_query(`insert into ${tableName} set ?`, entity),
 }
