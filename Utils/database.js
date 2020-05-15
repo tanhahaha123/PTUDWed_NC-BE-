@@ -3,11 +3,11 @@ const promisyfy=require('util').promisify;
 
 const pool=mysql.createPool({
     connectionLimit:100,
-    host:'99.000webhost.io',
+    host:'remotemysql.com',
     port:3306,
-    user:'id13624379_user',
-    password:'fc({C&>SmN88faPY',
-    database:'id13624379_banking'
+    user:'7zwzyanesh',
+    password:'kOlD7SwLL3',
+    database:'7zwzyanesh'
 });
 
 const pool_query=promisyfy(pool.query).bind(pool);
