@@ -2,18 +2,12 @@ const mysql = require('mysql');
 const promisyfy = require('util').promisify;
 
 const pool=mysql.createPool({
-    // connectionLimit: 100,
-    // host: 'remotemysql.com',
-    // port:3306,
-    // user: '7zwzyanesh',
-    // password: 'kOlD7SwLL3',
-    // database: '7zwzyanesh',
-    connectionLimit: 100,
-    host: 'localhost',
+    connectionlimit: 100,
+    host: 'remotemysql.com',
     port:3306,
-    user: 'root',
-    password: '123456',
-    database: 'banking_server'
+    user: '7zwzyanesh',
+    password: 'kold7swll3',
+    database: '7zwzyanesh',
 });
 
 const pool_query=promisyfy(pool.query).bind(pool);
