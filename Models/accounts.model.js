@@ -32,11 +32,8 @@ module.exports={
     //             "SoTien": 500,
     //             "NoiDung": "A chuyen tien B",
     //             "SoTaiKhoanNguoiGui": "",
-    //             "ThongTinNguoiGui": "Nhan vien A chuyen tien",
-    //             "LienNganHang": 0,
-    //             "TenNganHang": "",
+    //            
     //             "LoaiGiaoDich": "nhận tiền"
-    //         }
     //     ]
     // }
 };
