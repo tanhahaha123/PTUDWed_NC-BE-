@@ -6,13 +6,12 @@ const pool=mysql.createPool({
     host: 'remotemysql.com',
     port:3306,
     user: '7zwzyanesh',
-    password: 'kOlD7SwLL3',
+    password: 'kOlD7SwLL3@',
     database: '7zwzyanesh'
 });
 
 const pool_query=promisyfy(pool.query).bind(pool);
 
 module.exports={
-    load: sql=>pool_query(sql),
-    add: (entity, tableName) => pool_query(`insert into ${tableName} set ?`, entity),
+    query: (sql,entity) => entity===null?pool_query(sql):pool_query(sql,entity)
 }

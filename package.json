@@ -13,7 +13,11 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
+    "moment": "^2.25.3",
     "morgan": "^1.10.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "node-rsa": "^1.0.8",
+    "openpgp": "^4.10.4",
+    "request": "^2.88.2"
   }
 }

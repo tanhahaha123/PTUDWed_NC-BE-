@@ -1,0 +1,9 @@
+{
+	"APIWebPORT": 3000,
+	"BANK": {
+		"MinimumBalance": 50000
+	},
+	"PARTNER": {
+		"ExpiredTime": 300
+	}
+}
