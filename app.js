@@ -11,7 +11,7 @@ app.use(express.json());
 
 app.get('/', (req, res) => {
   res.json({
-    msg: 'hello from nodejs express api'
+    msg: 'hello from banking api'
   });
 })
 
