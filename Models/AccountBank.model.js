@@ -1,4 +1,4 @@
-const db=require('../utils/database');
+const db=require('../Utils/database');
 module.exports={
     queryAccountBankNumberFromPartner: STK => db.load(`SELECT y.TenKhachHang, y.SoDienThoai, y.GioiTinh, y.SoCMND, y.NgaySinh, y.DiaChi, x.LoaiTaiKhoan FROM tai_khoan_ngan_hang x, tai_khoan_khach_hang y WHERE x.SoTaiKhoan = ${STK} AND x.idTaiKhoanKhachHang = y.idTaiKhoanKhachHang`),
     all: _ => db.load(`select tai_khoan_khach_hang.*, tai_khoan_ngan_hang. from tai_khoan_ngan_hang`),
