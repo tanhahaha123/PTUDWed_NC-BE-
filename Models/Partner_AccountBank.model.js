@@ -1,4 +1,4 @@
-const db=require('../utils/database');
+const db=require('../Utils/database');
 module.exports={
     getThongTinTaiKhoan: STK => db.query(`SELECT y.TenKhachHang, y.GioiTinh, x.LoaiTaiKhoan FROM tai_khoan_ngan_hang x, tai_khoan_khach_hang y WHERE x.SoTaiKhoan = ${STK} AND x.idTaiKhoanKhachHang = y.idTaiKhoanKhachHang`),
     getTaiKhoanThanhToan: STK => db.query("SELECT * FROM tai_khoan_thanh_toan WHERE SoTaiKhoanThanhToan = ?",[STK]),
