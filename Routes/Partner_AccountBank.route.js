@@ -47,7 +47,7 @@ router.get('/destination-account', DecryptAndVerfify, async (req, res) => {
     }
 
     let data = await Partner_AccountBankModel.getThongTinTaiKhoan(STK);
-    if (data.length===0) return res.status(204)..json({});
+    if (data.length===0) return res.status(204).json({});
     res.json(data[0]);
 });
 
