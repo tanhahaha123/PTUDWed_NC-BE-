@@ -28,6 +28,22 @@ router.get('/detail/:stk', async (req, res) => {
     delete ret.SoDuHienTai;
     res.json(ret);
 });
+//Lay tat ca tai khoan cua khach hang
+router.get('/UserAccountsList/:stk', async (req, res) => {
+    //Kiem tra tinh hop le
+    if (isNaN(req.params.stk)) {
+        return res.status(400).json({
+          err: 'Invalid STK.'
+        });
+      }
+
+    const stk = +req.params.stk || 0;
+    let list = await accountModel.showAllAccounts(stk);
+    const ret={
+        ...list[0]
+    }
+    res.json(ret);
+});
 
 //Giao dich giua A va B
 router.post('/exchange', async (req, res) => {
