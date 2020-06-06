@@ -40,7 +40,7 @@ router.get('/UserAccountsList/:stk', async (req, res) => {
     const stk = +req.params.stk || 0;
     let list = await accountModel.showAllAccounts(stk);
     const ret={
-        ...list[0]
+        ...list
     }
     res.json(ret);
 });
