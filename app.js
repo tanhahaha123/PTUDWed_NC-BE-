@@ -32,6 +32,8 @@ app.use('/api/external/account-bank', require('./Routes/External_AccountBank.rou
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây
 app.use('/api/internal/accountbank', require('./Routes/AccountBank.route'));
+app.use('/api/internal/transaction', require('./Routes/TransactionHistory.route'));
+
 
 app.use((req, res, next) => {
   res.status(404).send('NOT FOUND');
