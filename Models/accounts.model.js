@@ -1,4 +1,4 @@
-const db=require('../utils/database');
+const db=require('../Utils/database');
 module.exports={
     allTKTT: _ => db.load(`SELECT *
                        FROM tai_khoan_ngan_hang a LEFT JOIN tai_khoan_thanh_toan b
