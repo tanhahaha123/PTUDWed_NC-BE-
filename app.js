@@ -21,6 +21,27 @@ app.get('/apidoc',(req,res)=>{
 	res.redirect('https://team25apidoc.000webhostapp.com/');
 });
 
+//----------------------AUTHENTICATION--------------------------------
+//--------------------------------------------------------------------
+app.use('/api/auth/signin', require('./Routes/Authentication/SignIn.route'));
+app.use('/api/auth/signup', require('./Routes/Authentication/SignUp.route'));
+app.use('/api/auth/changepassword', require('./Routes/Authentication/ChangePassword.route'));
+
+function verify(req, res, next) {
+  const token = req.headers['x-access-token'];
+  if (token) {
+    jwt.verify(token, 'secretKey', function (err, payload) {
+      if (err)
+        throw createError(401, err);
+
+      req.tokenPayload = payload;
+      next();
+    })
+  } else {
+    throw createError(401, 'No accessToken found.');
+  }
+}
+
 //----------------------PARTNER--------------------------------
 //cho phép ngân hàng đã liên kết truy cập vào tài nguyên này
 app.use('/api/partner/account-bank', require('./Routes/Partner_AccountBank.route'));

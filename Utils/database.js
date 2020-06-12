@@ -8,5 +8,7 @@ const pool=mysql.createPool(config.mysql);
 const pool_query=promisyfy(pool.query).bind(pool);
 
 module.exports={
-    query: (sql,entity) => entity===null?pool_query(sql):pool_query(sql,entity)
+    query: (sql,entity) => entity===null?pool_query(sql):pool_query(sql,entity),
+    add: (entity, tableName) => pool_query(`insert into ${tableName} set ?`, entity),
+    load: sql => pool_query(sql),
 }
