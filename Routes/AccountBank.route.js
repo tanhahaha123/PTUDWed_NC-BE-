@@ -1,5 +1,6 @@
 const express = require('express');
 const accountModel = require('../Models/AccountBank.model');
+const moment=require('moment');
 
 
 const router = express.Router();
@@ -44,7 +45,6 @@ router.get('/UserAccountsList/:stk', async (req, res) => {
     }
     res.json(ret);
 });
-
 //Giao dich giua A va B
 router.post('/exchange', async (req, res) => {
     //Check isNumber
