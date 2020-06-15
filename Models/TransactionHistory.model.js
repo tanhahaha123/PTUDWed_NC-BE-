@@ -8,6 +8,6 @@ module.exports={
                                             ORDER BY NgayGiaoDich`),
     getGiaoDichThanhToanNhacNo: stkgd=>db.query(`SELECT * FROM lich_su_giao_dich 
                                                 WHERE SoTaiKhoanGiaoDich = ${stkgd} AND LoaiGiaoDich = 'thanh toán nợ'
-                                                ORDER BY NgayGiaoDich`)
-
+                                                ORDER BY NgayGiaoDich`),
+    addLichSuGiaoDich: entity => db.query("INSERT INTO lich_su_giao_dich set ?", entity)
 };

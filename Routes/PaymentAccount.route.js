@@ -1,0 +1,87 @@
+const express = require('express');
+const moment=require('moment');
+
+const paymentAccountModel=require('../Models/PaymentAccount.model');
+const transactionHistoryModel=require('../Models/TransactionHistory.model');
+
+
+const config = require('../Config/config.json');
+const PaymentAccountModel = require('../Models/PaymentAccount.model');
+
+const router = express.Router();
+router.post('/UpdateBalance',async(req,res)=>{
+    let payload=req.body;
+    // let Payload={
+    //     "stk":"123123123",
+    //     "ThongTinNguoiGui":"Tran Van Dung",
+    //     "NoiDung":"",
+    //     "TenNganHang":"25Bank Gò Vấp",
+    //     "SoTien":10000,
+    // };
+    if(payload.stk==null)
+    {
+        return res.status(400).json({
+            err:"So tai khoan khong the bo trong"
+        });
+    }
+    if(payload.ThongTinNguoiGui==null)
+    {
+        return res.status(400).json({
+            err:"Thong tin nguoi giao dich khong the bo trong"
+        });
+    }
+    if(isNaN(payload.SoTien)||payload.SoTien==null)
+    {
+        return res.status(400).json({
+            err:"So tien khong hop le hoac bo trong"
+        });
+    }
+    payload.SoTien= +payload.SoTien;
+    //kiem tra so tien de lon hay khong
+    if(payload.SoTien<config.BANK.MinimumRecieve)
+    {
+        return res.status(200).json({
+            err:"So tien qua it de thuc hien giao dich"
+        });
+    }
+    let TaiKhoanThanhToan=await paymentAccountModel.getTaiKhoanThanhToan(payload.stk);
+    console.log(TaiKhoanThanhToan);
+    if(TaiKhoanThanhToan.length===0)
+    {
+        return res.status(400).json({
+            err: 'Khong tim thay so tai khoan'
+        })
+    }
+
+    const soDuHienTai= +TaiKhoanThanhToan[0].SoDu;
+    const SoDuMoi=soDuHienTai+payload.SoTien;
+    let resultUpdate=await paymentAccountModel.updateSoDu_tkThanhToan(payload.stk,SoDuMoi);
+    // console.log(payload.stk);
+    // console.log(soDuHienTai);
+    // console.log(SoDuMoi);
+    if (resultUpdate.affectedRows===0) 
+        return res.status(503).json({
+        err: 'Service Unavailable'
+    });
+    else
+    {
+        const ts = moment().valueOf();
+        let rowLichSuGiaoDich={
+            "MaGiaoDich": payload.stk+'_'+ts,
+            "SoTaiKhoanGiaoDich": payload.stk,
+            "NgayGiaoDich": moment().format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
+            "SoTien": payload.SoTien,
+            "NoiDung": payload.NoiDung,
+            "ThongTinNguoiGui": payload.ThongTinNguoiGui,
+            "LienNganHang": 0,
+            "TenNganHang": payload.DestinationBankName,
+            "LoaiGiaoDich": "nhận tiền"
+        }
+        let resultAdd = await transactionHistoryModel.addLichSuGiaoDich(rowLichSuGiaoDich);
+                if (resultAdd.affectedRows===0) throw new Error("Khong them duoc lich su giao dich, MaGiaoDich = "+rowLichSuGiaoDich.MaGiaoDich);
+    }
+    res.json({"reply":"Cap nhat thanh cong"});
+});
+
+
+module.exports=router;

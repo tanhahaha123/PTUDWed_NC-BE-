@@ -8,7 +8,8 @@
 	    "database": "7zwzyanesh"
 	},
 	"BANK": {
-		"MinimumBalance": 50000
+		"MinimumBalance": 50000,
+		"MinimumRecieve": 50000
 	},
 	"PARTNER": {
 		"ExpiredTime": 300

@@ -53,6 +53,9 @@ app.use('/api/external/account-bank', require('./Routes/External_AccountBank.rou
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây
 app.use('/api/internal/accountbank', require('./Routes/AccountBank.route'));
+app.use('/api/internal/accountuser', require('./Routes/AccountUser.route'));
+app.use('/api/internal/paymentaccount', require('./Routes/PaymentAccount.route'));
+app.use('/api/internal/savingaccount', require('./Routes/SavingAccount.rotue'));
 app.use('/api/internal/transaction', require('./Routes/TransactionHistory.route'));
 
 
