@@ -10,15 +10,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
+    "express-validator": "^6.5.0",
+    "jsonwebtoken": "^8.5.1",
     "md5": "^2.2.1",
     "moment": "^2.26.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "node-fetch": "^2.6.0",
     "node-rsa": "^1.0.8",
     "openpgp": "^4.10.4",
+    "path": "^0.12.7",
+    "querystring": "^0.2.0",
     "request": "^2.88.2"
   }
 }
