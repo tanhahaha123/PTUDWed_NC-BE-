@@ -22,6 +22,6 @@ module.exports = {
 
   singleByUserName: TenDangNhap => db.load(`select * from tai_khoan_khach_hang where TenDangNhap = '${TenDangNhap}' OR Email = '${TenDangNhap}'`),
   changePassword: entity => db.load(`UPDATE tai_khoan_khach_hang
-                                          SET MatKhau=${entity.NewPassword}
-                                          WHERE TenDangNhap=${entity.TenDangNhap} OR Email=${entity.TenDangNhap}`)
+                                    SET MatKhau='${entity.MatKhauMoi}'
+                                    WHERE TenDangNhap='${entity.TenDangNhap}' OR Email='${entity.TenDangNhap}'`)
 };

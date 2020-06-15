@@ -2,20 +2,26 @@ const express = require('express');
 const moment = require('moment');
 
 const debtReminderModel = require('../Models/DebtReminder.model');
+const { getDebtReminderByID } = require('../Models/DebtReminder.model');
 
 const router = express.Router();
 
-//Chi tiet thong tin 1 tai khoan
-//Khong hien thi so du
-router.get('/detail-info/:stk', async (req, res) => {
+// ______________ THÔNG TIN CHI TIẾT MỘT TÀI KHOẢN THEO SỐ TÀI KHOẢN______________
+router.get('/detail-info', async (req, res) => {
+    // payload = {
+    //     "SourceAccountNumber":123123123,
+    // }
+
+    let payload = req.body;
+
     //Kiem tra tinh hop le
-    if (isNaN(req.params.stk)) {
+    if (isNaN(payload.SourceAccountNumber)) {
         return res.status(400).json({
           err: 'Invalid STK.'
         });
       }
 
-    const stk = +req.params.stk || 0;
+    const stk = +payload.SourceAccountNumber || 0;
     const list = await debtReminderModel.detail(stk);
     if (list.length===0) {
       return res.status(400).json({
@@ -29,7 +35,31 @@ router.get('/detail-info/:stk', async (req, res) => {
     res.json(ret);
 });
 
-//Nạp tiền vào tài khoản từ ngân hàng liên kết
+//_____________________XEM DANH SÁCH NỢ____________________
+router.get('/', async(req, res) => {
+    // payload = {
+    //     "SourceAccountNumber":123123123,
+    // }
+
+    let payload = req.body;
+
+    if (isNaN(payload.SourceAccountNumber) || (payload.SourceAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường SourceAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+    // _______danh sách do bản thân tạo__________
+    let result1 = await debtReminderModel.getDebtReminderFromMe(payload.SourceAccountNumber);
+    // _______danh sách nhắc nợ do người khác gửi___________
+    let result2 = await debtReminderModel.getDebtReminderFromOthers(payload.SourceAccountNumber);
+    return res.status(200).json({
+        source: result1,
+        destination: result2
+    })
+
+})
+
+//_____________________TẠO NHẮC NỢ__________________
 router.post('/create-debt-reminder', async (req, res) => {
   let payload = req.body;
 
@@ -90,16 +120,61 @@ router.post('/create-debt-reminder', async (req, res) => {
       "NgayGiaoDich": moment().format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
       "SoTien": payload.Amount,
       "NoiDung": payload.Message,
-      "LoaiGiaoDich": "da tao",
+      "LoaiGiaoDich": "đã tạo",
       "TinhTrangXuLy": 1,
   }
 
-  console.log(rowLichSuNhacNo);
+//   console.log(rowLichSuNhacNo);
 
   let resultAdd = await debtReminderModel.addLichSuNhacNo(rowLichSuNhacNo);
   if (resultAdd.affectedRows===0) throw new Error("Khong them duoc lich su nhac no, MaGiaoDichNhacNo = "+rowLichSuGiaoDich.MaGiaoDichNhacNo);
 
   res.json({"reply":"Nhac no thành công"});
+});
+
+router.put('/', async(req, res) => {
+    // payload = {
+    //     "idGiaoDichNhacNo": 2,
+    //     "NoiDung": "toi da tra cho anh roi",
+    // }
+
+    let payload = req.body;
+
+    if (isNaN(payload.idGiaoDichNhacNo) || (payload.idGiaoDichNhacNo == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại nội dung, sai định dạng hoặc đang bỏ trống'
+        });
+    };
+    if ((payload.NoiDung == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại nội dung, sai định dạng hoặc đang bỏ trống'
+        });
+    };
+
+    const debtReminderByID = await debtReminderModel.getDebtReminderByID(payload.idGiaoDichNhacNo);
+    if (debtReminderByID.length===0) {
+      return res.status(400).json({
+          err: 'ID not found'
+      })
+    }
+
+    let rowLichSuNhacNo = {
+        "idGiaoDichNhacNo": payload.idGiaoDichNhacNo,
+        "NoiDung": payload.NoiDung,
+        "LoaiGiaoDich": "đã hủy",
+    }
+  
+    console.log(rowLichSuNhacNo);
+  
+    let result = await debtReminderModel.updateDebtReminder(rowLichSuNhacNo);
+    if (result.affectedRows===0) throw new Error("Khong thay doi duoc giao dich, idGiaoDichNhacNo = "+rowLichSuNhacNo.idGiaoDichNhacNo);
+    let resultChange = await debtReminderModel.getDebtReminderByID(rowLichSuNhacNo.idGiaoDichNhacNo)
+
+    res.status(200).json({
+        success: true,
+        ...resultChange[0]
+    });
+
 });
 
 module.exports = router;

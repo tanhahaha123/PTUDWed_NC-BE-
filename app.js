@@ -23,9 +23,7 @@ app.get('/apidoc',(req,res)=>{
 
 //----------------------AUTHENTICATION--------------------------------
 //--------------------------------------------------------------------
-app.use('/api/auth/signin', require('./Routes/Authentication/SignIn.route'));
-app.use('/api/auth/signup', require('./Routes/Authentication/SignUp.route'));
-app.use('/api/auth/changepassword', require('./Routes/Authentication/ChangePassword.route'));
+app.use('/api/auth', require('./Routes/Authentication/SignIn.route'));
 
 function verify(req, res, next) {
   const token = req.headers['x-access-token'];
@@ -40,7 +38,9 @@ function verify(req, res, next) {
   } else {
     throw createError(401, 'No accessToken found.');
   }
-}
+};
+
+app.use('/api/internal/debt-reminder', require('./Routes/DebtReminder.route'));
 
 //----------------------PARTNER--------------------------------
 //cho phép ngân hàng đã liên kết truy cập vào tài nguyên này
