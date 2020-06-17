@@ -1,5 +1,6 @@
 const express = require('express');
 const moment=require('moment');
+const bcrypt = require('bcryptjs');
 
 const paymentAccountModel=require('../Models/PaymentAccount.model');
 const accountUserModel=require('../Models/AccountUser.model');
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post('/AddUserAccount',async(req,res)=>{
     let payload=req.body;
 
+    //payload template
     // PayLoad={
     //     "TenDangNhap":"xyz3jean",
     //     "MatKhau":"jdjfdtyu",
@@ -89,6 +91,10 @@ router.post('/AddUserAccount',async(req,res)=>{
             err: 'Khong the bo trong Chi Nhanh Mo' 
         });
     }
+    //hash mat khau
+    const hash = bcrypt.hashSync(payload.MatKhau, 8);
+    payload.MatKhau = hash;
+
     let rowTaiKhoanKhachHang={
         "TenDangNhap": payload.TenDangNhap,
         "MatKhau": payload.MatKhau,
@@ -108,19 +114,21 @@ router.post('/AddUserAccount',async(req,res)=>{
     //console.log(rowTaiKhoanKhachHang);
     let ListTaiKhoanNganHang= await accountBankModel.getSoTaiKhoanNganHang();
     
+    //lay nhung so tai khoan da co
     var ListSoTaiKhoan=[];
     for (var i=0; i<ListTaiKhoanNganHang.length;i++)
     {
         ListSoTaiKhoan.push(ListTaiKhoanNganHang[i].SoTaiKhoan);
     }
-
+    //generate so tai khoan moi
     const SoTaiKhoanMoi=getRandomExcept(100000000,999999999,ListSoTaiKhoan);
+
     let resultAddTaiKhoanKhachHang= await accountUserModel.addTaiKhoanKhachHang(rowTaiKhoanKhachHang);
     if(resultAddTaiKhoanKhachHang.affectedRows ===0)
         throw new Error("Khong them duoc tai khoan khach hang");
     else{
         let idKhachHang=await accountUserModel.getIdTaiKhoanKhachHangFromCMND(rowTaiKhoanKhachHang.SoCMND);
-        //console.log(idTaiKhoanKhachHang);
+        //them tai khoan ngan hang moi
         let rowTaiKhoanNganHang={
             "SoTaiKhoan":SoTaiKhoanMoi,
             "LoaiTaiKhoan": "thanh toán",
@@ -129,6 +137,7 @@ router.post('/AddUserAccount',async(req,res)=>{
         let resultAddTaiKhoanNganHang= await accountBankModel.addTaiKhoanNganHang(rowTaiKhoanNganHang);
         if(resultAddTaiKhoanNganHang.affectedRows ===0)
             throw new Error("Khong them duoc tai khoan Ngan Hang");
+        //them tai khoan thanh toan moi
         let rowTaiKhoanThanhToan={
             "SoTaiKhoanThanhToan":SoTaiKhoanMoi,
             "SoDu":config.BANK.MinimumBalance
@@ -139,6 +148,8 @@ router.post('/AddUserAccount',async(req,res)=>{
     }
     res.json({"reply":"Tao tai khoan thanh cong"});
 });
+
+//function random so tru nhung so cho truoc
 function getRandomExcept(min, max, except) {
     except.sort(function(a, b) {
       return a - b;
