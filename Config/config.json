@@ -9,7 +9,11 @@
 	},
 	"BANK": {
 		"MinimumBalance": 50000,
-		"MinimumRecieve": 50000
+		"MinimumRecieve": 50000,
+		"InternalFee":1000,
+		"ExternalFee":3000,
+		"OTPExpiredTime": 300,
+		"ForgotPasswordOTPExpiredTime":300
 	},
 	"PARTNER": {
 		"ExpiredTime": 300
