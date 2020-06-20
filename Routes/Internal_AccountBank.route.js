@@ -80,7 +80,8 @@ router.post('/my-account-number/receiver-info', async (req, res) => {
         "TenGoiNho":payload.TenGoiNho,
         "SoTaiKhoanNguoiNhan":payload.SoTaiKhoanNguoiNhan,
         "TenNganHang":payload.TenNganHang,
-        "SoTaiKhoan":payload.MyAccountNumber
+        "SoTaiKhoan":payload.MyAccountNumber,
+
     };
 
     let resultAdd = await Internal_AccountBankModel.addThongTinNguoiNhan(rowDanhSachNguoiNhan);
