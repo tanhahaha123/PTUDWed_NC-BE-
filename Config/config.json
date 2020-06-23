@@ -1,4 +1,7 @@
 {
+	"abc": {
+		"as": 100
+	},
 	"mysql": {
 	    "connectionLimit": 100,
 	    "host": "remotemysql.com",
@@ -17,5 +20,11 @@
 	},
 	"PARTNER": {
 		"ExpiredTime": 300
+	},
+	"AUTH":{
+		"secretKey": "abc",
+		"refreshKey": "abc",
+		"secretTokenLife": 60, 
+		"refreshTokenLife": 86400 
 	}
 }

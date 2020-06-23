@@ -9,7 +9,6 @@ const userSignInValidationRules = () => {
 };
 
 const changePasswordValidationRules = (req, res) => {
-  console.log("HERE: ChangePass")
   return [
     // Tên đăng nhập rỗng
     body('TenDangNhap', 'Tên đăng nhập không được để trống').notEmpty(),
@@ -29,16 +28,16 @@ const changePasswordValidationRules = (req, res) => {
 // ─────── CHECK FOR ERRORS ─────
 //
 const validate = (req, res, next) => {
-  console.log("HERE: Validate");
+  // console.log("HERE: Validate");
   // Lấy tất cả các lỗi
   const errors = validationResult(req);
   if (errors.isEmpty()) {
-    console.log("Validate1");
+    // console.log("Validate1");
     return next()
   }
   const extractedErrors = [];
   errors.array().map(err => extractedErrors.push({ [err.param]: err.msg }))
-  console.log("Validate2");
+  // console.log("Validate2");
   return res.status(422).json({
     
     errors: extractedErrors,

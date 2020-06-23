@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-require('express-async-errors');
+const createError = require('http-errors');
+
 
 const config = require('./Config/config.json');
+const { verify } =require('./Middlewares/Verify');
 
 const app = express();
 
@@ -21,30 +23,24 @@ app.get('/apidoc',(req,res)=>{
 	res.redirect('https://team25apidoc.000webhostapp.com/');
 });
 
-//----------------------AUTHENTICATION--------------------------------
-//--------------------------------------------------------------------
-app.use('/api/auth', require('./Routes/Authentication/SignIn.route'));
+//------------------------ADMINISTRATOR--------------------------------
 
-function verify(req, res, next) {
-  const token = req.headers['x-access-token'];
-  if (token) {
-    jwt.verify(token, 'secretKey', function (err, payload) {
-      if (err)
-        throw createError(401, err);
 
-      req.tokenPayload = payload;
-      next();
-    })
-  } else {
-    throw createError(401, 'No accessToken found.');
-  }
-};
+app.use('/api/admin', require('./Routes/Admin/EmployeeManagement.route'));
+app.use('/api/admin/transaction', require('./Routes/Admin/Transaction.route'));
 
-app.use('/api/internal/debt-reminder', require('./Routes/DebtReminder.route'));
+//------------------------AUTHENTICATION--------------------------------
+
+app.use('/api/auth/signin',  require('./Routes/Authentication/SignIn.route'));
+app.use('/api/auth/signup', require('./Routes/Authentication/SignUp.route'));
+app.use('/api/auth/change-password', verify, require('./Routes/Authentication/ChangePassword.route'));
+
+
+app.use('/api/internal/debt-reminder', verify,  require('./Routes/DebtReminder.route'));
 
 //----------------------PARTNER--------------------------------
 //cho phép ngân hàng đã liên kết truy cập vào tài nguyên này
-app.use('/api/partner/account-bank', require('./Routes/Partner_AccountBank.route'));
+app.use('/api/partner/account-bank',verify, require('./Routes/Partner_AccountBank.route'));
 
 //----------------------EXTERNAL--------------------------------
 //gọi tài nguyên API tới ngân hàng khác
@@ -52,16 +48,16 @@ app.use('/api/partner/account-bank', require('./Routes/Partner_AccountBank.route
 
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây
-app.use('/api/internal/accountbank', require('./Routes/AccountBank.route'));
-app.use('/api/internal/accountuser', require('./Routes/AccountUser.route'));
-app.use('/api/internal/paymentaccount', require('./Routes/PaymentAccount.route'));
-app.use('/api/internal/savingaccount', require('./Routes/SavingAccount.rotue'));
-app.use('/api/internal/transaction', require('./Routes/TransactionHistory.route'));
+app.use('/api/internal/accountbank', verify, require('./Routes/AccountBank.route'));
+app.use('/api/internal/accountuser',verify, require('./Routes/AccountUser.route'));
+app.use('/api/internal/paymentaccount',verify, require('./Routes/PaymentAccount.route'));
+app.use('/api/internal/savingaccount',verify, require('./Routes/SavingAccount.rotue'));
+app.use('/api/internal/transaction', verify, require('./Routes/TransactionHistory.route'));
 // app.use('/login', require('./Routes/login.route'));
 // app.use('/logout', require('./Routes/logout.route'));
 app.use('/api/forgot-password', require('./Routes/ForgotPassword.route'));
-app.use('/api/internal/account-customer', require('./Routes/Internal_AccountCustomer.route'));
-app.use('/api/internal/account-bank', require('./Routes/Internal_AccountBank.route'));
+app.use('/api/internal/account-customer',verify, require('./Routes/Internal_AccountCustomer.route'));
+app.use('/api/internal/account-bank',verify, require('./Routes/Internal_AccountBank.route'));
 
 
 app.use((req, res, next) => {
