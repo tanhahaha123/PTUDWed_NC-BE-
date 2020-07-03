@@ -139,7 +139,7 @@ router.post('/destination-account/recharge', DecryptAndVerfify, async (req, res)
         "NgayGiaoDich": moment().format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
         "SoTien": payload.Amount,
         "NoiDung": payload.Message,
-        "SoTaiKhoanNguoiGui": payload.SourceAccountNumber,
+        "GiaoDichVoiSoTK": payload.SourceAccountNumber,
         "ThongTinNguoiGui": payload.SourceAccountName,
         "LienNganHang": 1,
         "TenNganHang": payload.BankName,

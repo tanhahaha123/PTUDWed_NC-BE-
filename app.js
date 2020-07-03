@@ -35,6 +35,7 @@ app.use('/api/auth/signin',  require('./Routes/Authentication/SignIn.route'));
 app.use('/api/auth/signup', require('./Routes/Authentication/SignUp.route'));
 app.use('/api/auth/change-password', verify, require('./Routes/Authentication/ChangePassword.route'));
 
+app.use('/api/auth/refresh-token', require('./Routes/Authentication/RefreshToken.route'));
 
 app.use('/api/internal/debt-reminder', verify,  require('./Routes/DebtReminder.route'));
 

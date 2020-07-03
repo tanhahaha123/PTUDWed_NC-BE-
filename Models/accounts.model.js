@@ -15,7 +15,7 @@ module.exports={
                         ON  a.SoTaiKhoan=b.SoTaiKhoanTietKiem 
                         WHERE a.SoTaiKhoan=${stk}`), 
     getNganHangLienKet: tennganhang => db.load(`SELECT *
-                        FROM ngan_hang_liet_ket a
+                        FROM ngan_hang_lien_ket a
                         WHERE a.TenNganHang='${tennganhang}'`),
     exchangeA: (stk, totalExchangeA) => db.load(`UPDATE tai_khoan_thanh_toan 
                                                 SET SoDu = SoDu -${totalExchangeA} 
@@ -31,7 +31,7 @@ module.exports={
     //             "NgayGiaoDich": "2020/1/1",
     //             "SoTien": 500,
     //             "NoiDung": "A chuyen tien B",
-    //             "SoTaiKhoanNguoiGui": "",
+    //             "GiaoDichVoiSoTK": "",
     //             "ThongTinNguoiGui": "Nhan vien A chuyen tien",
     //             "LienNganHang": 0,
     //             "TenNganHang": "",
