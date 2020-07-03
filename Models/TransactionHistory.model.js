@@ -1,5 +1,8 @@
 const db=require('../Utils/database');
 module.exports={
+    getGiaoDich: stkgd=>db.query(`SELECT * FROM lich_su_giao_dich 
+                                        WHERE SoTaiKhoanGiaoDich = ${stkgd} 
+                                        ORDER BY NgayGiaoDich`),
     getGiaoDichNhanTien: stkgd=>db.query(`SELECT * FROM lich_su_giao_dich 
                                         WHERE SoTaiKhoanGiaoDich = ${stkgd} AND LoaiGiaoDich = 'nhận tiền'
                                         ORDER BY NgayGiaoDich`),
