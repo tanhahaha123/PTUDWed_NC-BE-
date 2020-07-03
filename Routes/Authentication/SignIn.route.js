@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt =require('jsonwebtoken');
 const signInModel = require('../../Models/Authentication/SignIn.model');
-const changePasswordModel = require('../../Models/Authentication/SignIn.model');
+const RefreshTokenModel = require('../../Models/Authentication/RefreshToken.model');
 const { verify} = require('../../Middlewares/Verify');
 const utils = require('../../Middlewares/Utils');
 
@@ -22,7 +22,7 @@ const router = express.Router();
 
 router.use(bodyParser.text());
 
-const tokenList ={};
+// const tokenList ={};
 
 //Hiển thị font-end 
 router.get('/', (_, res) => res.sendFile(path.join(__dirname, "../../index.html")));
@@ -72,7 +72,7 @@ router.post('/',userSignInValidationRules(), validate,  async (req, res, next) =
   }
 
   const payload1 = {
-    userId: ret.id
+    userId: ret.idTaiKhoanKhachHang
   }
 
   //Tao token
@@ -85,7 +85,13 @@ router.post('/',userSignInValidationRules(), validate,  async (req, res, next) =
     expiresIn: config.AUTH.refreshTokenLife
   });
   // Lưu lại mã Refresh token, kèm thông tin của user để sau này sử dụng lại
-  tokenList[refreshToken] = payload1;
+  // tokenList[refreshToken] = payload1;
+  let resultDeleteRefreshToken = await RefreshTokenModel.deleteRefreshToken(ret.idTaiKhoanKhachHang);
+  let rowRefreshToken = {
+      "idTaiKhoanKhachHang": ret.idTaiKhoanKhachHang,
+      "RefreshToken": refreshToken
+  };
+  let resultAddRefreshToken = await RefreshTokenModel.addRefreshToken(rowRefreshToken);
   // Trả lại cho user thông tin mã token kèm theo mã Refresh token
   const response = {
     token,
@@ -106,36 +112,36 @@ router.post('/',userSignInValidationRules(), validate,  async (req, res, next) =
  * Lấy mã token mới sử dụng Refresh token
  * POST /refresh_token
  */
-router.post('/refresh_token', async (req, res) => {
-  // User gửi mã Refresh token kèm theo trong body
-  const { refreshToken } = req.body;
-  // Kiểm tra Refresh token có được gửi kèm và mã này có tồn tại trên hệ thống hay không
-  if ((refreshToken) && (refreshToken in tokenList)) {
-    try {
-      // Kiểm tra mã Refresh token
-      await utils.verifyJwtToken(refreshToken, config.AUTH.refreshKey);
-      // Lấy lại thông tin user
-      const user = tokenList[refreshToken];
-      // Tạo mới mã token và trả lại cho user
-      const token = jwt.sign(user, config.AUTH.secretKey, {
-        expiresIn: config.AUTH.secretTokenLife
-      });
-      const response = {
-        token,
-      }
-      res.status(200).json(response);
-    } catch (err) {
-      console.error(err);
-      res.status(403).json({
-        message: 'Invalid refresh token',
-      });
-    }
-  } else {
-    res.status(400).json({
-      message: 'Invalid request',
-    });
-  }
-});
+// router.post('/refresh_token', async (req, res) => {
+//   // User gửi mã Refresh token kèm theo trong body
+//   const { refreshToken } = req.body;
+//   // Kiểm tra Refresh token có được gửi kèm và mã này có tồn tại trên hệ thống hay không
+//   if ((refreshToken) && (refreshToken in tokenList)) {
+//     try {
+//       // Kiểm tra mã Refresh token
+//       await utils.verifyJwtToken(refreshToken, config.AUTH.refreshKey);
+//       // Lấy lại thông tin user
+//       const user = tokenList[refreshToken];
+//       // Tạo mới mã token và trả lại cho user
+//       const token = jwt.sign(user, config.AUTH.secretKey, {
+//         expiresIn: config.AUTH.secretTokenLife
+//       });
+//       const response = {
+//         token,
+//       }
+//       res.status(200).json(response);
+//     } catch (err) {
+//       console.error(err);
+//       res.status(403).json({
+//         message: 'Invalid refresh token',
+//       });
+//     }
+//   } else {
+//     res.status(400).json({
+//       message: 'Invalid request',
+//     });
+//   }
+// });
 
 
 router.use(verify);
