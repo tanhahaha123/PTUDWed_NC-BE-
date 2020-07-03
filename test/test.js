@@ -1,7 +1,7 @@
 // Test cho giao dich
 
 // {
-//     "SoTaiKhoanNguoiGui": "123123123",
+//     "GiaoDichVoiSoTK": "123123123",
 //     "SoTaiKhoanGiaoDich": "147147147",
 //     "SoTien": "2000",
 //     "NoiDung": " Chuyen tien",
@@ -11,9 +11,9 @@
 // }
 
 // Truong hop khong phai nhan vien ngan hang
-// && SoTaiKhoanNguoiGui sai
+// && GiaoDichVoiSoTK sai
 // {
-//     "SoTaiKhoanNguoiGui": "555",
+//     "GiaoDichVoiSoTK": "555",
 //     "SoTaiKhoanGiaoDich": "147147147",
 //     "SoTien": "2000",
 //     "NoiDung": " Chuyen tien",
