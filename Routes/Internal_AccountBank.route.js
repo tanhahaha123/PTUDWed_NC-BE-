@@ -338,7 +338,7 @@ router.post('/my-account-number/internal-transfer', InternalOTPVerify, async (re
         "NgayGiaoDich": moment(ts).format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
         "SoTien": payload.Amount-FeeDich,
         "NoiDung": payload.Message,
-        "SoTaiKhoanNguoiGui": payload.DestinationAccountNumber,
+        "GiaoDichVoiSoTK": payload.DestinationAccountNumber,
         "ThongTinNguoiGui": resultTenDangKy[0].TenKhachHang,
         "LienNganHang": 0,
         "TenNganHang": "25Bank",
@@ -554,7 +554,7 @@ router.post('/my-account-number/external-transfer', ExternalOTPVerify, async (re
         "NgayGiaoDich": moment(ts).format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
         "SoTien": payload.Amount-FeeDich,
         "NoiDung": payload.Message,
-        "SoTaiKhoanNguoiGui": payload.DestinationAccountNumber,
+        "GiaoDichVoiSoTK": payload.DestinationAccountNumber,
         "ThongTinNguoiGui": payload.DestinationAccountName,
         "LienNganHang": 1,
         "TenNganHang": payload.BankName,
@@ -733,7 +733,7 @@ router.post('/my-account-number/debts-payment', InternalOTPVerify, async (req, r
         "NgayGiaoDich": moment(ts).format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
         "SoTien": payload.Amount,
         "NoiDung": payload.Message,
-        "SoTaiKhoanNguoiGui": payload.DestinationAccountNumber,
+        "GiaoDichVoiSoTK": payload.DestinationAccountNumber,
         "ThongTinNguoiGui": resultTenDangKy[0].TenKhachHang,
         "LienNganHang": 0,
         "TenNganHang": "25Bank",

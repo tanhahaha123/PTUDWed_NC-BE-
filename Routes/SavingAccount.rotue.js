@@ -9,6 +9,27 @@ const config = require('../Config/config.json');
 const savingAccountModel = require('../Models/SavingAccount.model');
 
 const router = express.Router();
+router.get('/',async(req,res)=>{
+    let list = await savingAccountModel.all();
+    const ret={
+        ...list
+    }
+    res.json(ret);
+});
+router.get('/detail/:stk',async(req,res)=>{
+    if (isNaN(req.params.stk)) {
+        return res.status(400).json({
+          err: 'Invalid STK.'
+        });
+      }
+
+    const stk = +req.params.stk || 0;
+    let list = await savingAccountModel.getTaiKhoanTietKiem(stk);
+    const ret={
+        ...list
+    }
+    res.json(ret);
+});
 router.post('/UpdateBalance',async(req,res)=>{
     let payload=req.body;
     // let Payload={

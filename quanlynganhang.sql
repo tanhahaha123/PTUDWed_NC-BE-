@@ -123,7 +123,7 @@ CREATE TABLE `lich_su_giao_dich` (
   `NgayGiaoDich` datetime(3) NOT NULL,
   `SoTien` bigint(20) NOT NULL,
   `NoiDung` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `SoTaiKhoanNguoiGui` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `GiaoDichVoiSoTK` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   `ThongTinNguoiGui` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `LienNganHang` tinyint(1) NOT NULL,
   `TenNganHang` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE `lich_su_giao_dich` (
 -- Đang đổ dữ liệu cho bảng `lich_su_giao_dich`
 --
 
-INSERT INTO `lich_su_giao_dich` (`idLichSuGiaoDich`, `MaGiaoDich`, `SoTaiKhoanGiaoDich`, `NgayGiaoDich`, `SoTien`, `NoiDung`, `SoTaiKhoanNguoiGui`, `ThongTinNguoiGui`, `LienNganHang`, `TenNganHang`, `LoaiGiaoDich`) VALUES
+INSERT INTO `lich_su_giao_dich` (`idLichSuGiaoDich`, `MaGiaoDich`, `SoTaiKhoanGiaoDich`, `NgayGiaoDich`, `SoTien`, `NoiDung`, `GiaoDichVoiSoTK`, `ThongTinNguoiGui`, `LienNganHang`, `TenNganHang`, `LoaiGiaoDich`) VALUES
 (3, '258258258_1589881212570', '258258258', '2020-02-01 00:00:00.000', 200000, 'Nop tien vao tai khoan', '', 'Trần Văn Nam 0987541021', 0, '', 'nhận tiền'),
 (4, '258258258_1589881212570', '258258258', '2020-02-01 00:00:00.000', 1000000, 'Coc hang 1', '201201201', 'NGUYEN ANH TU_AGRIBANK', 1, 'AGRIBANK', 'chuyển khoản'),
 (5, '258258258_1589881212570', '258258258', '2020-02-01 00:00:00.000', 200000, 'cho muon', '147147147', 'NGUYEN VAN THANH', 0, NULL, 'nhận tiền'),
@@ -171,19 +171,19 @@ INSERT INTO `lich_su_giao_dich` (`idLichSuGiaoDich`, `MaGiaoDich`, `SoTaiKhoanGi
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `ngan_hang_liet_ket`
+-- Cấu trúc bảng cho bảng `ngan_hang_lien_ket`
 --
 
-CREATE TABLE `ngan_hang_liet_ket` (
+CREATE TABLE `ngan_hang_lien_ket` (
   `idNganHangLienKet` int(11) NOT NULL,
   `TenNganHang` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `ngan_hang_liet_ket`
+-- Đang đổ dữ liệu cho bảng `ngan_hang_lien_ket`
 --
 
-INSERT INTO `ngan_hang_liet_ket` (`idNganHangLienKet`, `TenNganHang`) VALUES
+INSERT INTO `ngan_hang_lien_ket` (`idNganHangLienKet`, `TenNganHang`) VALUES
 (1, 'AGRIBANK'),
 (2, 'GO'),
 (3, '37Bank');
@@ -370,8 +370,14 @@ CREATE TABLE `forgot_password_otp_code` (
 -- --------------------------------------------------------
 
 --
--- Đang đổ dữ liệu cho bảng `tai_khoan_thanh_toan`
+-- Cấu trúc bảng cho bảng `refresh_token`
 --
+
+CREATE TABLE `refresh_token` (
+  `idRefreshToken` int(11) NOT NULL,
+  `idTaiKhoanKhachHang` int(11) NOT NULL,
+  `RefreshToken` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 --
@@ -407,9 +413,9 @@ ALTER TABLE `lich_su_giao_dich`
   ADD KEY `fk_LichSuGiaoDich_TaiKhoanNganHang_idx` (`SoTaiKhoanGiaoDich`);
 
 --
--- Chỉ mục cho bảng `ngan_hang_liet_ket`
+-- Chỉ mục cho bảng `ngan_hang_lien_ket`
 --
-ALTER TABLE `ngan_hang_liet_ket`
+ALTER TABLE `ngan_hang_lien_ket`
   ADD UNIQUE KEY `TenNganHang` (`TenNganHang`),
   ADD UNIQUE KEY `idNganHangLienKet` (`idNganHangLienKet`,`TenNganHang`);
 
@@ -467,6 +473,12 @@ ALTER TABLE `otp_code`
 ALTER TABLE `forgot_password_otp_code`
   ADD PRIMARY KEY (`idForgotPasswordOTPCode`),
   ADD KEY `fk_ForgotPasswordOTPCode_TaiKhoanKhachHang_idx` (`Email`);
+  
+--
+-- Chỉ mục cho bảng `refresh_token`
+--
+ALTER TABLE `refresh_token`
+  ADD PRIMARY KEY (`idRefreshToken`);
 
 --
 -- AUTO_INCREMENT cho các bảng đã đổ
@@ -497,9 +509,9 @@ ALTER TABLE `lich_su_giao_dich`
   MODIFY `idLichSuGiaoDich` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
--- AUTO_INCREMENT cho bảng `ngan_hang_liet_ket`
+-- AUTO_INCREMENT cho bảng `ngan_hang_lien_ket`
 --
-ALTER TABLE `ngan_hang_liet_ket`
+ALTER TABLE `ngan_hang_lien_ket`
   MODIFY `idNganHangLienKet` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
@@ -543,6 +555,14 @@ ALTER TABLE `otp_code`
 --
 ALTER TABLE `forgot_password_otp_code`
   MODIFY `idForgotPasswordOTPCode` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `refresh_token`
+--
+
+ALTER TABLE `refresh_token`
+  MODIFY `idRefreshToken` int(11) NOT NULL AUTO_INCREMENT;
+  
   
 --
 -- Các ràng buộc cho các bảng đã đổ

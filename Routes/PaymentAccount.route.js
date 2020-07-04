@@ -6,9 +6,30 @@ const transactionHistoryModel=require('../Models/TransactionHistory.model');
 
 
 const config = require('../Config/config.json');
-const PaymentAccountModel = require('../Models/PaymentAccount.model');
+
 
 const router = express.Router();
+router.get('/',async(req,res)=>{
+    let list = await paymentAccountModel.all();
+    const ret={
+        ...list
+    }
+    res.json(ret);
+});
+router.get('/detail/:stk',async(req,res)=>{
+    if (isNaN(req.params.stk)) {
+        return res.status(400).json({
+          err: 'Invalid STK.'
+        });
+      }
+
+    const stk = +req.params.stk || 0;
+    let list = await paymentAccountModel.getTaiKhoanThanhToan(stk);
+    const ret={
+        ...list
+    }
+    res.json(ret);
+});
 router.post('/UpdateBalance',async(req,res)=>{
     let payload=req.body;
     // let Payload={
