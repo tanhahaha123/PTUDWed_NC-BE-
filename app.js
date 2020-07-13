@@ -41,7 +41,7 @@ app.use('/api/internal/debt-reminder', verify,  require('./Routes/DebtReminder.r
 
 //----------------------PARTNER--------------------------------
 //cho phép ngân hàng đã liên kết truy cập vào tài nguyên này
-app.use('/api/partner/account-bank',verify, require('./Routes/Partner_AccountBank.route'));
+app.use('/api/partner/account-bank', require('./Routes/Partner_AccountBank.route'));
 
 //----------------------EXTERNAL--------------------------------
 //gọi tài nguyên API tới ngân hàng khác
@@ -49,11 +49,11 @@ app.use('/api/partner/account-bank',verify, require('./Routes/Partner_AccountBan
 
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây
-app.use('/api/internal/accountbank', verify, require('./Routes/AccountBank.route'));
+app.use('/api/internal/accountbank',verify, require('./Routes/AccountBank.route'));
 app.use('/api/internal/accountuser',verify, require('./Routes/AccountUser.route'));
 app.use('/api/internal/paymentaccount',verify, require('./Routes/PaymentAccount.route'));
 app.use('/api/internal/savingaccount',verify, require('./Routes/SavingAccount.rotue'));
-app.use('/api/internal/transaction', verify, require('./Routes/TransactionHistory.route'));
+app.use('/api/internal/transaction',verify, require('./Routes/TransactionHistory.route'));
 // app.use('/login', require('./Routes/login.route'));
 // app.use('/logout', require('./Routes/logout.route'));
 app.use('/api/forgot-password', require('./Routes/ForgotPassword.route'));
