@@ -58,7 +58,7 @@ router.post('/UpdateBalance',async(req,res)=>{
         });
     }
     payload.SoTien= +payload.SoTien;
-    //kiem tra so tien de lon hay khong
+    //kiem tra so tien du lon hay khong
     if(payload.SoTien<config.BANK.MinimumRecieve)
     {
         return res.status(200).json({
@@ -75,7 +75,7 @@ router.post('/UpdateBalance',async(req,res)=>{
     }
 
     const soDuHienTai= +TaiKhoanThanhToan[0].SoDu;
-    const SoDuMoi=soDuHienTai+payload.SoTien;
+    const SoDuMoi=soDuHienTai+payload.SoTien-config.BANK.InternalFee;
     let resultUpdate=await paymentAccountModel.updateSoDu_tkThanhToan(payload.stk,SoDuMoi);
     // console.log(payload.stk);
     // console.log(soDuHienTai);
