@@ -9,8 +9,8 @@ module.exports={
     getGiaoDichChuyenKhoan: stkgd=>db.query(`SELECT * FROM lich_su_giao_dich 
                                             WHERE SoTaiKhoanGiaoDich = ${stkgd} AND LoaiGiaoDich = 'chuyển khoản'
                                             ORDER BY NgayGiaoDich`),
-    getGiaoDichThanhToanNhacNo: stkgd=>db.query(`SELECT * FROM lich_su_giao_dich 
-                                                WHERE SoTaiKhoanGiaoDich = ${stkgd} AND LoaiGiaoDich = 'thanh toán nợ'
+    getGiaoDichThanhToanNhacNo: stkgd=>db.query(`SELECT * FROM giao_dich_nhac_no 
+                                                WHERE SoTaiKhoanNguoiGui = ${stkgd} OR SoTaiKhoanNguoiNhan = ${stkgd}
                                                 ORDER BY NgayGiaoDich`),
     addLichSuGiaoDich: entity => db.query("INSERT INTO lich_su_giao_dich set ?", entity)
 };
