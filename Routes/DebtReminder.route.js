@@ -7,51 +7,50 @@ const { getDebtReminderByID } = require('../Models/DebtReminder.model');
 const router = express.Router();
 
 // ______________ THÔNG TIN CHI TIẾT MỘT TÀI KHOẢN THEO SỐ TÀI KHOẢN______________
-router.get('/detail-info', async (req, res) => {
-    // payload = {
-    //     "SourceAccountNumber":123123123,
-    // }
-
-    let payload = req.body;
+router.get('/detail-info/:stk', async (req, res) => {
+    //console.log(typeof req.params.stk);
+    const payload = {
+        SourceAccountNumber: parseInt(req.params.stk)
+    }
 
     //Kiem tra tinh hop le
     if (isNaN(payload.SourceAccountNumber)) {
-        return res.status(400).json({
-          err: 'Invalid STK.'
+        return res.status(404).json({
+          err: 'Tài khoản sai định dạng, vui lòng nhập 9 chữ số.'
         });
       }
-
+    // console.log("HERE");
     const stk = +payload.SourceAccountNumber || 0;
     const list = await debtReminderModel.detail(stk);
     if (list.length===0) {
-      return res.status(400).json({
-          err: 'DestinationAccountNumber not found'
+      return res.json({
+          err: 'Tài khoản không tồn tại'
       })
     }
 
     const ret={
         ...list[0]
     }
-    res.json(ret);
+    return res.status(200).json(ret);
 });
 
 //_____________________XEM DANH SÁCH NỢ____________________
-router.get('/', async(req, res) => {
+router.get('/:stk', async(req, res) => {
     // payload = {
     //     "SourceAccountNumber":123123123,
     // }
-
-    let payload = req.body;
-
-    if (isNaN(payload.SourceAccountNumber) || (payload.SourceAccountNumber == null)) {
+    
+    let payload = req.params;
+    console.log(payload.stk);
+    if (isNaN(payload.stk) || (payload.stk == null)) {
         return res.status(400).json({
             err: 'Vui lòng kiểm tra lại trường SourceAccountNumber, sai định dạng hoặc đang bỏ trống'
         });
     }
     // _______danh sách do bản thân tạo__________
-    let result1 = await debtReminderModel.getDebtReminderFromMe(payload.SourceAccountNumber);
+    let result1 = await debtReminderModel.getDebtReminderFromMe(payload.stk);
     // _______danh sách nhắc nợ do người khác gửi___________
-    let result2 = await debtReminderModel.getDebtReminderFromOthers(payload.SourceAccountNumber);
+    let result2 = await debtReminderModel.getDebtReminderFromOthers(payload.stk);
     return res.status(200).json({
         source: result1,
         destination: result2
@@ -60,14 +59,14 @@ router.get('/', async(req, res) => {
 })
 
 //_____________________TẠO NHẮC NỢ__________________
-router.post('/create-debt-reminder', async (req, res) => {
+router.post('/', async (req, res) => {
   let payload = req.body;
 
   // payload = {
-  //     "SourceAccountNumber":123123123,
-  //     "DestinationAccountNumber":258258258,
-  //     "Amount":500000, 
-  //     "Message":"Yeu cau tra no",
+    //   "SourceAccountNumber":123123123,
+    //   "DestinationAccountNumber":258258258,
+    //   "Amount":500000, 
+    //   "Message":"Yeu cau tra no",
   // }
 
   if (isNaN(payload.SourceAccountNumber) || (payload.SourceAccountNumber == null)) {
@@ -124,14 +123,14 @@ router.post('/create-debt-reminder', async (req, res) => {
       "TinhTrangXuLy": 1,
   }
 
-//   console.log(rowLichSuNhacNo);
-
   let resultAdd = await debtReminderModel.addLichSuNhacNo(rowLichSuNhacNo);
   if (resultAdd.affectedRows===0) throw new Error("Khong them duoc lich su nhac no, MaGiaoDichNhacNo = "+rowLichSuGiaoDich.MaGiaoDichNhacNo);
 
   res.json({"reply":"Nhac no thành công"});
 });
 
+// Hủy nhắc nợ
+// Thay đổi DB trạng thái LoaiGiaoDich = đã hủy
 router.put('/', async(req, res) => {
     // payload = {
     //     "idGiaoDichNhacNo": 2,
@@ -168,12 +167,19 @@ router.put('/', async(req, res) => {
   
     let result = await debtReminderModel.updateDebtReminder(rowLichSuNhacNo);
     if (result.affectedRows===0) throw new Error("Khong thay doi duoc giao dich, idGiaoDichNhacNo = "+rowLichSuNhacNo.idGiaoDichNhacNo);
-    let resultChange = await debtReminderModel.getDebtReminderByID(rowLichSuNhacNo.idGiaoDichNhacNo)
+    // _______danh sách do bản thân tạo__________
+    let result1 = await debtReminderModel.getDebtReminderFromMe(payload.stk);
+    // _______danh sách nhắc nợ do người khác gửi___________
+    let result2 = await debtReminderModel.getDebtReminderFromOthers(payload.stk);
+    return res.status(200).json({
+        source: result1,
+        destination: result2
+    })
 
-    res.status(200).json({
-        success: true,
-        ...resultChange[0]
-    });
+    // res.status(200).json({
+    //     success: true,
+    //     ...resultChange[0]
+    // });
 
 });
 
