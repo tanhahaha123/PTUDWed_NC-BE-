@@ -7,7 +7,7 @@ const bankConnection = require('../../Models/Internal_AccountBank.model');
 const router = express.Router();
 
 // Get toàn bộ giao dịch + Tổng tiền giao dịch theo một ngân hàng 
-router.get('/bank-name', async(req, res) => {
+router.post('/bank-name', async(req, res) => {
 
     let payload = req.body;
     // payload = {
@@ -72,4 +72,52 @@ router.get('/bank-name', async(req, res) => {
 
 });
 
+// Tổng tiền theo từng ngân hàng liên kết
+router.get('/bank-name', async(req, res) => {
+
+    // let payload = req.body;    
+
+
+    // const resultList = await bankConnection.getNganHangLienKet(payload.TenNganHang);
+    // if(resultList.length === 0){
+    //     return res.status(400).json({
+    //         err: 'Ngân hàng chưa được liên kết'
+    //     });
+    // };
+
+    // const row ={
+    //     "TenNganHang": payload.TenNganHang,
+    //     "NgayBatDau": payload.DateStart,
+    //     "NgayKetThuc": payload.DateEnd
+    // }
+
+    //const resultTotalMoneyTransactions = await transaction.getTotalTransactionByBankName();
+    
+    //Tổng giao dịch theo từng ngân hàng
+    const resultTransactions = await transaction.getTotalRevenueByBankName();
+    res.status(200).json({
+        ...resultTransactions
+    });
+
+});
+
+router.get('/year', async(req, res) => {
+    
+    //Tổng giao dịch theo từng ngân hàng
+    const resultTransactions = await transaction.getTotalTransactionByYear();
+    res.status(200).json({
+        ...resultTransactions
+    });
+
+});
+
+router.get('/month', async(req, res) => {
+    
+    //Tổng giao dịch theo từng ngân hàng
+    const resultTransactions = await transaction.getTotalTransactionByMonth();
+    res.status(200).json({
+        ...resultTransactions
+    });
+
+});
 module.exports =router;

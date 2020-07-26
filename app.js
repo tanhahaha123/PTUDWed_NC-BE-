@@ -37,11 +37,11 @@ app.use('/api/auth/change-password', verify, require('./Routes/Authentication/Ch
 
 app.use('/api/auth/refresh-token', require('./Routes/Authentication/RefreshToken.route'));
 
-app.use('/api/internal/debt-reminder', verify,  require('./Routes/DebtReminder.route'));
+app.use('/api/internal/debt-reminder', verify, require('./Routes/DebtReminder.route'));
 
 //----------------------PARTNER--------------------------------
 //cho phép ngân hàng đã liên kết truy cập vào tài nguyên này
-app.use('/api/partner/account-bank',verify, require('./Routes/Partner_AccountBank.route'));
+app.use('/api/partner/account-bank', verify, require('./Routes/Partner_AccountBank.route'));
 
 //----------------------EXTERNAL--------------------------------
 //gọi tài nguyên API tới ngân hàng khác
@@ -50,15 +50,15 @@ app.use('/api/partner/account-bank',verify, require('./Routes/Partner_AccountBan
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây
 app.use('/api/internal/accountbank', verify, require('./Routes/AccountBank.route'));
-app.use('/api/internal/accountuser',verify, require('./Routes/AccountUser.route'));
+app.use('/api/internal/accountuser',  require('./Routes/AccountUser.route'));
 app.use('/api/internal/paymentaccount',verify, require('./Routes/PaymentAccount.route'));
 app.use('/api/internal/savingaccount',verify, require('./Routes/SavingAccount.rotue'));
 app.use('/api/internal/transaction', verify, require('./Routes/TransactionHistory.route'));
 // app.use('/login', require('./Routes/login.route'));
 // app.use('/logout', require('./Routes/logout.route'));
 app.use('/api/forgot-password', require('./Routes/ForgotPassword.route'));
-app.use('/api/internal/account-customer',verify, require('./Routes/Internal_AccountCustomer.route'));
-app.use('/api/internal/account-bank',verify, require('./Routes/Internal_AccountBank.route'));
+app.use('/api/internal/account-customer', require('./Routes/Internal_AccountCustomer.route'));
+app.use('/api/internal/account-bank', require('./Routes/Internal_AccountBank.route'));
 
 
 app.use((req, res, next) => {

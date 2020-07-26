@@ -27,7 +27,6 @@ module.exports = {
       //Dung mat khau
       return rows[0];
     }
-
     return null;
   },
   changePassword: async entity =>{

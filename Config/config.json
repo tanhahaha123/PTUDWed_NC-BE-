@@ -22,9 +22,9 @@
 		"ExpiredTime": 300
 	},
 	"AUTH":{
-		"secretKey": "abc",
-		"refreshKey": "abc",
-		"secretTokenLife": 60, 
-		"refreshTokenLife": 86400 
+		"secretKey": "sercetKey",
+		"refreshKey": "refreshKey",
+		"secretTokenLife": 30, 
+		"refreshTokenLife": 30
 	}
 }

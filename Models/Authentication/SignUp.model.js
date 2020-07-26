@@ -20,7 +20,9 @@ module.exports = {
     return db.add(entity, 'tai_khoan_khach_hang');
   },
 
-  singleByUserName: TenDangNhap => db.load(`select * from tai_khoan_khach_hang where TenDangNhap = '${TenDangNhap}' OR Email = '${TenDangNhap}'`),
+  singleByUserName: TenDangNhap => db.load(`select * from tai_khoan_khach_hang a JOIN tai_khoan_ngan_hang b
+                                            ON a.idTaiKhoanKhachHang=b.idTaiKhoanKhachHang  
+                                            where TenDangNhap = '${TenDangNhap}' OR Email = '${TenDangNhap}'`),
   changePassword: entity => db.load(`UPDATE tai_khoan_khach_hang
                                     SET MatKhau='${entity.MatKhauMoi}'
                                     WHERE TenDangNhap='${entity.TenDangNhap}' OR Email='${entity.TenDangNhap}'`)
