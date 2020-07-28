@@ -75,7 +75,7 @@ router.post('/UpdateBalance',async(req,res)=>{
     }
     
     const soDuHienTai= +TaiKhoanTietKiem[0].SoDu;
-    const SoDuMoi=soDuHienTai+payload.SoTien;
+    const SoDuMoi=soDuHienTai+payload.SoTien-config.BANK.InternalFee;
     let resultUpdate=await savingAccountModel.updateSoDu_tkTietKiem(payload.stk,SoDuMoi);
     // console.log(payload.stk);
     // console.log(soDuHienTai);

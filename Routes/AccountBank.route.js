@@ -22,11 +22,10 @@ router.get('/detail/:stk', async (req, res) => {
       }
 
     const stk = +req.params.stk || 0;
-    const list = await accountModel.detail(stk);
+    const list = await accountModel.getThongTinTaiKhoan(stk);
     const ret={
-        ...list[0]
+        ...list
     }
-    delete ret.SoDuHienTai;
     res.json(ret);
 });
 //Lay tat ca tai khoan cua khach hang

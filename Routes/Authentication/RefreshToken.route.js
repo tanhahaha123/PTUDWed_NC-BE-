@@ -6,7 +6,7 @@ const RefreshTokenModel = require('../../Models/Authentication/RefreshToken.mode
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
 	let payload = req.body;
 	// payload = {
     //     "AccessToken":"sdfadfdfsfd",
@@ -25,12 +25,12 @@ router.get('/', async (req, res) => {
     }
 
     let decoded = jwt.decode(payload.AccessToken);
-    if ((decoded)&&(decoded.userId)) {
+    if ((decoded)&&(decoded.idTaiKhoanKhachHang)) {
         jwt.verify(payload.RefreshToken, config.AUTH.refreshKey, async function(err, decoded) {
           if (err) return res.status(400).json(err);
-          let resultGetRefreshToken = await RefreshTokenModel.getRefreshToken(decoded.userId,payload.RefreshToken);
+          let resultGetRefreshToken = await RefreshTokenModel.getRefreshToken(decoded.idTaiKhoanKhachHang,payload.RefreshToken);
           if (resultGetRefreshToken.length > 0) {
-            let AccessToken = jwt.sign({"userId":decoded.userId}, config.AUTH.secretKey, {expiresIn: config.AUTH.secretTokenLife});
+            let AccessToken = jwt.sign({"idTaiKhoanKhachHang":decoded.idTaiKhoanKhachHang}, config.AUTH.secretKey, {expiresIn: config.AUTH.secretTokenLife});
             return res.json({ //dù sai vẫn thông báo
                 "AccessToken": AccessToken
             });
