@@ -3,13 +3,20 @@ const request = require('request');
 const moment = require('moment');
 const md5 = require('md5');
 const NodeRSA = require('node-rsa');
+const openpgp = require('openpgp');
 
 const config = require('../Config/config.json');
 const External_AccountBankModel = require('../Models/External_AccountBank.model');
 
+//RSA init
 const MyBank_PrivateKey = fs.readFileSync('Keys/RSA/MyPrivateKey.pem','utf8');
 const MyBank_PrivateKeyObject = new NodeRSA(MyBank_PrivateKey);
 
+//PGP init
+const passphrasePGP = `25bank`; // what the private key is encrypted with
+const MyBank_privateKeyArmoredPGP = fs.readFileSync('Keys/PGP/MyPrivateKey.pem','utf8');
+
+const PartnerBank_publicKeyArmoredPGP = fs.readFileSync('Keys/PGP/30Bank.pem','utf8');
 
 //Truy vấn thông tin tài khoản của ngân hàng khác
 module.exports.getExternalInfoAccount = async (payload) => {
@@ -34,43 +41,44 @@ module.exports.getExternalInfoAccount = async (payload) => {
     DestinationAccountNumber = +DestinationAccountNumber;
 
     switch (DestinationBankName) {
-        case "SimulatorBank": //giả lập ngân hàng mình (các nhóm liên kết khác thay đổi API và tham số liên tục T_T, khó để test)
-        {
-            const SimulatorBankKey = fs.readFileSync('Keys/RSA/SimulatorBank.pem','utf8');
-            const SimulatorBankKeyObject = new NodeRSA(SimulatorBankKey);
+        // case "SimulatorBank": //giả lập ngân hàng mình (các nhóm liên kết khác thay đổi API và tham số liên tục T_T, khó để test)
+        // {
+        //     const SimulatorBankKey = fs.readFileSync('Keys/RSA/SimulatorBank.pem','utf8');
+        //     const SimulatorBankKeyObject = new NodeRSA(SimulatorBankKey);
 
-            const iat = moment().valueOf();
-            let PayloadBody = {"BankName":"25Bank","DestinationAccountNumber":DestinationAccountNumber,"iat":iat};
-            let Encrypted = SimulatorBankKeyObject.encrypt(PayloadBody,"base64");
-            let Signed = MyBank_PrivateKeyObject.sign(PayloadBody,"base64");
-            let reqBody = {"Encrypted":Encrypted, "Signed":Signed};
+        //     const iat = moment().valueOf();
+        //     let PayloadBody = {"BankName":"25Bank","DestinationAccountNumber":DestinationAccountNumber,"iat":iat};
+        //     let Encrypted = SimulatorBankKeyObject.encrypt(PayloadBody,"base64");
+        //     let Signed = MyBank_PrivateKeyObject.sign(PayloadBody,"base64");
+        //     let reqBody = {"Encrypted":Encrypted, "Signed":Signed};
 
-            let option = {
-                method: 'GET',
-                url: 'http://localhost:3001/api/partner/account-bank/destination-account',
-                json: reqBody
-            };
-            let resultRequest;
-            try {
-                resultRequest = await doRequest(option);
-            } catch(err) {
-                return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
-            };
+        //     let option = {
+        //         method: 'GET',
+        //         url: 'http://localhost:3001/api/partner/account-bank/destination-account',
+        //         json: reqBody
+        //     };
+        //     let resultRequest;
+        //     try {
+        //         resultRequest = await doRequest(option);
+        //     } catch(err) {
+        //         return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
+        //     };
 
-            if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"DestinationAccountName":resultRequest.body.TenKhachHang,...resultRequest.body}};
-            else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
+        //     if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"DestinationAccountName":resultRequest.body.TenKhachHang,...resultRequest.body}};
+        //     else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
 
-            break;
-        }
+        //     break;
+        // }
         case "GO":
         {
             const ts = moment().valueOf();
             const hashSecretKey = md5("Infymt");
+
             const reqBody = {"account_number":DestinationAccountNumber.toString()};
 
             let option = {
-                method: 'GET',
-                url: 'https://infymt.herokuapp.com/api/accounts/partner',
+                method: 'POST',
+                url: 'https://tts-bank.herokuapp.com/partner/check',
                 headers: {
                     "partnerCode":"25Bank",
                     "ts": ts,
@@ -91,8 +99,86 @@ module.exports.getExternalInfoAccount = async (payload) => {
                 //ignore
             }
 
-            if ((resultRequest.response.statusCode === 500)&&(resultRequest.body.message==="Error.")) return {};
-            return {StatusCode:200, json:resultRequest.body};
+            if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"TenKhachHang":resultRequest.body.fullname,...resultRequest.body}};
+            else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
+
+            break;
+        }
+        case "37Bank":
+        {
+            const reqBody = {"bankNumber":DestinationAccountNumber.toString()};
+
+            let option = {
+                method: 'GET',
+                url: 'https://ibanking37.herokuapp.com/v1/third-party/accounts',
+                headers: {
+                    "X-Third-Party-Name":"25Bank"
+                },
+                qs: reqBody //querry string similar "params axios"
+            };
+            let resultRequest;
+            try {
+                resultRequest = await doRequest(option);
+            } catch(err) {
+                return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
+            }
+
+            try {
+                resultRequest.body = JSON.parse(resultRequest.body);
+            } catch(err){
+                //ignore
+            }
+
+            if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"TenKhachHang":resultRequest.body.data.bankName,...resultRequest.body}};
+            else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
+
+            break;
+        }
+        case "30Bank":
+        {
+            const { keys: [privateKey_me] } = await openpgp.key.readArmored(MyBank_privateKeyArmoredPGP);
+            await privateKey_me.decrypt(passphrasePGP);
+
+            const reqBody = {"account_number":DestinationAccountNumber.toString(),"request_time":moment().valueOf()};
+
+            const { data: encrypted } = await openpgp.encrypt({
+                message: openpgp.message.fromText(JSON.stringify(reqBody)),                 // input as Message object
+                publicKeys: (await openpgp.key.readArmored(PartnerBank_publicKeyArmoredPGP)).keys, // for encryption
+                privateKeys: [privateKey_me]                                           // for signing (optional)
+            });
+
+            let option = {
+                method: 'POST',
+                url: 'https://internet-banking-30.herokuapp.com/api/account/info',
+                headers: {
+                    "Partner-Code":"Bank25"
+                },
+                json: {"message":encrypted}
+            };
+            let resultRequest;
+            try {
+                resultRequest = await doRequest(option);
+            } catch(err) {
+                return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
+            }
+
+            try {
+                resultRequest.body = JSON.parse(resultRequest.body);
+            } catch(err){
+                //ignore
+            }
+
+            if (resultRequest.response.statusCode===200) {
+                if (resultRequest.body.code===0) return {StatusCode:200, json: {"TenKhachHang":resultRequest.body.data.account_name,...resultRequest.body}};
+                else return {StatusCode: 200, json: resultRequest.body};
+            }
+            else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
+
+            break;
+        }
+        default:
+        {
+            return {StatusCode: 406, json: {"reply":"Xin lỗi, không tìm thấy ngân hàng liên kết trong cơ sở dữ liệu"}};
             break;
         }
     }
@@ -159,48 +245,56 @@ module.exports.rechargeExternalAccount = async (payload) => {
     }
 
     switch (payload.DestinationBankName) {
-        case "SimulatorBank":
-        {
-            const SimulatorBankKey = fs.readFileSync('Keys/RSA/SimulatorBank.pem','utf8');
-            const SimulatorBankKeyObject = new NodeRSA(SimulatorBankKey);
+        // case "SimulatorBank":
+        // {
+        //     const SimulatorBankKey = fs.readFileSync('Keys/RSA/SimulatorBank.pem','utf8');
+        //     const SimulatorBankKeyObject = new NodeRSA(SimulatorBankKey);
 
-            const iat = moment().valueOf();
-            let PayloadBody = {"BankName":"25Bank","SourceAccountNumber":payload.SourceAccountNumber,"SourceAccountName":payload.SourceAccountName,"DestinationAccountNumber":payload.DestinationAccountNumber,"Amount":payload.Amount,"Message":payload.Message,"iat":iat};
-            let Encrypted = SimulatorBankKeyObject.encrypt(PayloadBody,"base64");
-            let Signed = MyBank_PrivateKeyObject.sign(PayloadBody,"base64");
-            let reqBody = {"Encrypted":Encrypted, "Signed":Signed};
+        //     const iat = moment().valueOf();
+        //     let PayloadBody = {"BankName":"25Bank","SourceAccountNumber":payload.SourceAccountNumber,"SourceAccountName":payload.SourceAccountName,"DestinationAccountNumber":payload.DestinationAccountNumber,"Amount":payload.Amount,"Message":payload.Message,"iat":iat};
+        //     let Encrypted = SimulatorBankKeyObject.encrypt(PayloadBody,"base64");
+        //     let Signed = MyBank_PrivateKeyObject.sign(PayloadBody,"base64");
+        //     let reqBody = {"Encrypted":Encrypted, "Signed":Signed};
 
-            let option = {
-                method: 'POST',
-                url: 'http://localhost:3001/api/partner/account-bank/destination-account/recharge',
-                json: reqBody
-            };
-            let resultRequest;
-            try {
-                resultRequest = await doRequest(option);
-            } catch(err) {
-                return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
-            };
-            return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
-            // if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"DestinationAccountName":resultRequest.body.TenKhachHang,...resultRequest.body}};
-            // else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
+        //     let option = {
+        //         method: 'POST',
+        //         url: 'http://localhost:3001/api/partner/account-bank/destination-account/recharge',
+        //         json: reqBody
+        //     };
+        //     let resultRequest;
+        //     try {
+        //         resultRequest = await doRequest(option);
+        //     } catch(err) {
+        //         return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
+        //     };
+        //     return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
+        //     // if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"DestinationAccountName":resultRequest.body.TenKhachHang,...resultRequest.body}};
+        //     // else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
 
-            break;
-        }
+        //     break;
+        // }
         case "GO":
         {
             const ts = moment().valueOf();
             const hashSecretKey = md5("Infymt");
-            const reqBody = {"account_number":payload.DestinationAccountNumber.toString(),"money":payload.Amount,"currentTime":ts};
-            const signature = MyBank_PrivateKeyObject.sign(reqBody,"base64");
+            const reqBody = {
+              "sender_account_number": payload.SourceAccountNumber.toString(), 
+              "receiver_account_number": payload.DestinationAccountNumber.toString(), 
+              "money": payload.Amount, 
+              "type_fee": "1",   
+              "message": payload.Message
+              };
+
+            const signature = MyBank_PrivateKeyObject.sign(reqBody,'base64');
+            const sig = md5(ts + JSON.stringify(reqBody) + hashSecretKey);  
 
             let option = {
                 method: 'POST',
-                url: 'https://infymt.herokuapp.com/api/accounts/partner/recharge',
+                url: 'https://tts-bank.herokuapp.com/partner/recharge',
                 headers: {
                     "partnerCode":"25Bank",
                     "ts": ts,
-                    "sig": md5(ts + JSON.stringify(reqBody) + hashSecretKey),
+                    "sig": sig,
                     "signature": signature
                 },
                 json: reqBody
@@ -217,53 +311,54 @@ module.exports.rechargeExternalAccount = async (payload) => {
             } catch(err){
                 //ignore
             }
-            if ((resultRequest.response.statusCode === 200)&&(resultRequest.body==="Number not found")) return {StatusCode:400, json:{err: 'DestinationAccountNumber not found'}};
-            return {StatusCode:200, json:resultRequest.body};
 
-            // request({
-            //     method: 'POST',
-            //     url: 'https://infymt.herokuapp.com/api/accounts/partner/recharge',
-            //     headers: {
-            //         "partnerCode":"25Bank",
-            //         "ts": ts,
-            //         "sig": md5(ts + JSON.stringify(reqBody) + hashSecretKey),
-            //         "signature": signature
-            //     },
-            //     json: reqBody
-            // }, async function(error, response, body) {
-            //     if (error) return res.status(500).json({"err":"Vui lòng thử lại request"});
+            if (resultRequest.response.statusCode===203) return {StatusCode:200, json: {"reply": "Giao dịch chuyển khoản thành công"}};
+            else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
 
-            //     try {
-            //         body = JSON.parse(body);
-            //     } catch(err){
-            //         //ignore
-            //     }
+            break;
+        }
+        case "37Bank":
+        {
+            let bankNumber = "370001";
+            let requestId = bankNumber+moment().valueOf().toString().slice(4,-3);
+            let amount = "20000";
+            let message = "trả tiền chụp ảnhgggggggggggdfffffffffffffffffff";
+            let rawMessage = bankNumber+requestId+amount+message;
+            let signature = MyBank_PrivateKeyObject.sign(rawMessage,'base64');
 
-            //     if ((response.statusCode === 200)&&(body==="Number not found")) return res.status(400).json({err: 'DestinationAccountNumber not found'});
+            let option = {
+                method: 'POST',
+                url: 'https://ibanking37.herokuapp.com/v1/third-party/accounts/topup',
+                headers: {"X-Third-Party-Name":"25Bank"}, 
+                json: {
+                    "bankNumber":bankNumber,
+                    "requestId":requestId,
+                    "amount": amount,
+                    "message": message,
+                    "signature": signature
+                }
+            };
+            let resultRequest;
+            try {
+                resultRequest = await doRequest(option);
+            } catch(err) {
+                return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
+            }
 
-            //     res.json(body);
+            try {
+                resultRequest.body = JSON.parse(resultRequest.body);
+            } catch(err){
+                //ignore
+            }
 
-            //     let resultUpdate = await External_AccountBankModel.updateSoDu(payload.SourceAccountNumber,SoDuHienTai-payload.Amount);
-            //     if (resultUpdate.affectedRows===0) return res.status(503).json({
-            //         err: 'Service Unavailable'
-            //     });
+            if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"reply": "Giao dịch chuyển khoản thành công"}};
+            else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
 
-            //     let rowLichSuGiaoDich = {
-            //         "MaGiaoDich": payload.SourceAccountNumber+'_'+ts,
-            //         "SoTaiKhoanGiaoDich": payload.SourceAccountNumber,
-            //         "NgayGiaoDich": moment().format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
-            //         "SoTien": payload.Amount,
-            //         "NoiDung": payload.Message,
-            //         "GiaoDichVoiSoTK": payload.DestinationAccountNumber,
-            //         "ThongTinNguoiGui": payload.DestinationAccountName,
-            //         "LienNganHang": 1,
-            //         "TenNganHang": payload.DestinationBankName,
-            //         "LoaiGiaoDich": "chuyển khoản"
-            //     }
-
-            //     let resultAdd = await External_AccountBankModel.addLichSuGiaoDich(rowLichSuGiaoDich);
-            //     if (resultAdd.affectedRows===0) throw new Error("Khong them duoc lich su giao dich, MaGiaoDich = "+rowLichSuGiaoDich.MaGiaoDich);
-            // });
+            break;
+        }
+        default:
+        {
+            return {StatusCode: 406, json: {"reply":"Xin lỗi, không tìm thấy ngân hàng liên kết trong cơ sở dữ liệu"}};
             break;
         }
     }

@@ -15,7 +15,8 @@ const router = express.Router();
 
 //Liệt kê (get all) tất cả thông tin người nhận
 router.get('/my-account-number/receiver-info', async (req, res) => {
-    let payload = req.body;
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
     // payload = {
     //     "MyAccountNumber":147147147
     // }
@@ -75,6 +76,17 @@ router.post('/my-account-number/receiver-info', async (req, res) => {
 
     payload.MyAccountNumber = +payload.MyAccountNumber;
     payload.SoTaiKhoanNguoiNhan = +payload.SoTaiKhoanNguoiNhan;
+
+    if (payload.MyAccountNumber === payload.SoTaiKhoanNguoiNhan) 
+        return res.status(400).json({
+            err: 'Số tài khoản người gửi và số tài khoản người nhận trùng nhau'
+        });
+
+    let resultCheck = await Internal_AccountBankModel.checkThongTinNguoiNhan(payload);
+    if (resultCheck.length!==0) 
+        return res.status(400).json({
+            err: 'Tên gợi nhớ hoặc số tài khoản người nhận đã tồn tại trong danh sách'
+        })
 
     let rowDanhSachNguoiNhan = {
         "TenGoiNho":payload.TenGoiNho,
@@ -143,9 +155,15 @@ router.patch('/my-account-number/receiver-info', async (req, res) => {
 router.delete('/my-account-number/receiver-info', async (req, res) => {
     let payload = req.body;
     // payload = {
+    //     "MyAccountNumber":147147147,
     //     "SoTaiKhoanNguoiNhan":842842841
     // }
 
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
     if (isNaN(payload.SoTaiKhoanNguoiNhan) || (payload.SoTaiKhoanNguoiNhan == null)) {
         return res.status(400).json({
             err: 'Vui lòng kiểm tra lại trường SoTaiKhoanNguoiNhan, sai định dạng hoặc đang bỏ trống'
@@ -154,11 +172,11 @@ router.delete('/my-account-number/receiver-info', async (req, res) => {
 
     payload.SoTaiKhoanNguoiNhan = +payload.SoTaiKhoanNguoiNhan;
 
-    let resultList = await Internal_AccountBankModel.deleteThongTinNguoiNhan(payload.SoTaiKhoanNguoiNhan);
+    let resultList = await Internal_AccountBankModel.deleteThongTinNguoiNhan(payload.SoTaiKhoanNguoiNhan,payload.MyAccountNumber);
 
     if (resultList.affectedRows===0) 
         return res.status(400).json({
-            err: 'SoTaiKhoanNguoiNhan not found'
+            err: 'MyAccountNumber or SoTaiKhoanNguoiNhan not found'
         })
 
     res.json({"reply":"Xóa thông tin người nhận thành công"});
@@ -166,7 +184,12 @@ router.delete('/my-account-number/receiver-info', async (req, res) => {
 
 //Chuyển khoản từ tài khoản "my-account-number" tới tài khoản khác trong cùng một ngân hàng (lấy mã OTP)
 router.get('/my-account-number/internal-transfer', async (req, res) => {
-    let payload = req.body;
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    payload.DestinationAccountNumber = req.query.DestinationAccountNumber;
+    payload.Amount = req.query.Amount;
+    payload.Message = req.query.Message;
+    payload.SenderPayFee = req.query.SenderPayFee;
     // payload = {
     //     "MyAccountNumber":147147147,
     //     "DestinationAccountNumber":123123123,
@@ -282,11 +305,22 @@ router.post('/my-account-number/internal-transfer', InternalOTPVerify, async (re
     //     "OTPCode":"654789"
     // }
 
+    payload.Amount = +payload.Amount;
+    if (payload.Amount%1000!=0) 
+        return res.status(400).json({
+            err: 'Số tiền chuyển phải là bội của 1000'
+        });
+
     if (payload.SenderPayFee == null) {
         return res.status(400).json({
             err: 'Vui lòng kiểm tra lại trường SenderPayFee, sai định dạng hoặc đang bỏ trống'
         });
     }
+
+    if (payload.MyAccountNumber==payload.DestinationAccountNumber)
+        return res.status(400).json({
+            err: 'Tài khoản người gửi và tài khoản người nhận trùng nhau'
+        });
 
     let TaiKhoanThanhToanNguon = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
     if (TaiKhoanThanhToanNguon.length === 0) return res.status(400).json({
@@ -325,7 +359,7 @@ router.post('/my-account-number/internal-transfer', InternalOTPVerify, async (re
     if ((resultUpdateNguon.affectedRows!==0)&&(resultUpdateDich.affectedRows!==0)) res.json({
         reply: "Giao dịch chuyển khoản thành công"
     });
-    else res.status(503).json({
+    else return res.status(503).json({
         err: "Giao dịch chuyển khoản thất bại"
     });
 
@@ -352,7 +386,13 @@ router.post('/my-account-number/internal-transfer', InternalOTPVerify, async (re
 
 //Chuyển khoản từ tài khoản "my-account-number" tới tài khoản khác liên ngân hàng (lấy mã OTP)
 router.get('/my-account-number/external-transfer', async (req, res) => {
-    let payload = req.body;
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    payload.DestinationAccountNumber = req.query.DestinationAccountNumber;
+    payload.Amount = req.query.Amount;
+    payload.Message = req.query.Message;
+    payload.SenderPayFee = req.query.SenderPayFee;
+    payload.BankName = req.query.BankName;
     // payload = {
     //     "MyAccountNumber":147147147,
     //     "DestinationAccountNumber":123123123,
@@ -417,7 +457,8 @@ router.get('/my-account-number/external-transfer', async (req, res) => {
     if (resultRequest.StatusCode===408) return res.status(408).json(resultRequest.json);//Request quá hạn
     if (resultRequest.StatusCode===406) return res.status(406).json(resultRequest.json);//Ngân hàng chưa liên kết
     if (resultRequest.StatusCode===204) return res.status(204).json(resultRequest.json);//Tài khoản đích không tồn tại
-    if (resultRequest.StatusCode===200) payload.DestinationAccountName = resultRequest.json.DestinationAccountName;
+    if (resultRequest.StatusCode!==200) return res.status(resultRequest.StatusCode).json(resultRequest.json);
+    if (resultRequest.StatusCode===200) payload.DestinationAccountName = resultRequest.json.TenKhachHang;
 
     let transporter = nodemailer.createTransport({
         service: "Gmail",
@@ -476,6 +517,12 @@ router.post('/my-account-number/external-transfer', ExternalOTPVerify, async (re
     //     "OTPCode":"654789"
     // }
 
+    payload.Amount = +payload.Amount;
+    if (payload.Amount%1000!=0) 
+        return res.status(400).json({
+            err: 'Số tiền chuyển phải là bội của 1000'
+        });
+
     let resultGetNganHangLienKet = await Internal_AccountBankModel.getNganHangLienKet(payload.BankName);
     if (resultGetNganHangLienKet.length === 0) return res.status(406).json({"reply":"Xin lỗi, ngân hàng chưa liên kết với chúng tôi"});
 
@@ -494,7 +541,8 @@ router.post('/my-account-number/external-transfer', ExternalOTPVerify, async (re
     if (resultRequest.StatusCode===408) return res.status(408).json(resultRequest.json);//Request quá hạn
     if (resultRequest.StatusCode===406) return res.status(406).json(resultRequest.json);//Ngân hàng chưa liên kết
     if (resultRequest.StatusCode===204) return res.status(204).json(resultRequest.json);//Tài khoản đích không tồn tại
-    if (resultRequest.StatusCode===200) payload.DestinationAccountName = resultRequest.json.DestinationAccountName;
+    if (resultRequest.StatusCode!==200) return res.status(resultRequest.StatusCode).json(resultRequest.json);
+    if (resultRequest.StatusCode===200) payload.DestinationAccountName = resultRequest.json.TenKhachHang;
 
     let FeeNguon;
     let FeeDich;
@@ -531,17 +579,19 @@ router.post('/my-account-number/external-transfer', ExternalOTPVerify, async (re
         "Amount":payload.Amount-FeeDich,
         "Message":payload.Message,
     }
+
     let resultRequest2 = await ExternalFunction.rechargeExternalAccount(option2);
 
-    if (resultRequest.StatusCode===503) return res.status(503).json(resultRequest.json);//Dịch vụ ngân hàng liên kết không có sẵn
-    if (resultRequest.StatusCode===408) return res.status(408).json(resultRequest.json);//Request quá hạn
-    if (resultRequest.StatusCode===406) return res.status(406).json(resultRequest.json);//Ngân hàng chưa liên kết
+    if (resultRequest2.StatusCode===503) return res.status(503).json(resultRequest2.json);//Dịch vụ ngân hàng liên kết không có sẵn
+    if (resultRequest2.StatusCode===408) return res.status(408).json(resultRequest2.json);//Request quá hạn
+    if (resultRequest2.StatusCode===406) return res.status(406).json(resultRequest2.json);//Ngân hàng chưa liên kết
+    if (resultRequest2.StatusCode!==200) return res.status(resultRequest2.StatusCode).json(resultRequest2.json);
     if (resultRequest2.StatusCode===200) {
         let resultUpdateNguon = await Internal_AccountBankModel.updateSoDu(payload.MyAccountNumber,SoDuHienTaiNguon-payload.Amount-FeeNguon);
         if (resultUpdateNguon.affectedRows!==0) res.json({
             reply: "Giao dịch chuyển khoản thành công"
         });
-        else res.status(503).json({
+        else return res.status(503).json({
             err: "Giao dịch chuyển khoản thất bại"
         });
     };
@@ -757,6 +807,50 @@ router.post('/my-account-number/debts-payment', InternalOTPVerify, async (req, r
     };
     let resultAddGiaoDichNhacNo = await Internal_AccountBankModel.addGiaoDichNhacNo(rowGiaoDichNhacNo);
 
+});
+
+//Truy vấn số dư của tài khoản thanh toán
+router.get('/my-account-number/get-payment-balance', async (req, res) => {
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    // payload = {
+    //     "MyAccountNumber":147147147
+    // }
+
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let result = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
+    if (result.length === 0) return res.status(400).json({
+        err: 'MyAccountNumber not found'
+    });
+
+    res.json(result[0]);
+});
+
+//Truy vấn tên người sở hữu tài khoản
+router.get('/my-account-number/get-fullname', async (req, res) => {
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    // payload = {
+    //     "MyAccountNumber":147147147
+    // }
+
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let result = await Internal_AccountBankModel.getKhachHang(payload.MyAccountNumber);
+    if (result.length === 0) return res.status(400).json({
+        err: 'MyAccountNumber not found'
+    });
+
+    res.json({"TenKhachHang":result[0].TenKhachHang});
 });
 
 function formatCurrency(number){

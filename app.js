@@ -33,7 +33,7 @@ app.use('/api/admin/transaction', require('./Routes/Admin/Transaction.route'));
 
 app.use('/api/auth/signin',  require('./Routes/Authentication/SignIn.route'));
 app.use('/api/auth/signup', require('./Routes/Authentication/SignUp.route'));
-app.use('/api/auth/change-password', verify, require('./Routes/Authentication/ChangePassword.route'));
+app.use('/api/auth/change-password', require('./Routes/Authentication/ChangePassword.route'));
 
 app.use('/api/auth/refresh-token', require('./Routes/Authentication/RefreshToken.route'));
 
@@ -47,7 +47,7 @@ app.use('/api/partner/account-bank', verify, require('./Routes/Partner_AccountBa
 
 //----------------------EXTERNAL--------------------------------
 //gọi tài nguyên API tới ngân hàng khác
-// app.use('/api/external/account-bank', require('./Routes/External_AccountBank.route'));
+app.use('/api/external/account-bank', require('./Routes/External_AccountBank.route'));
 
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây

@@ -20,7 +20,6 @@ router.post('/', changePasswordValidationRules(), validate, async (req, res, nex
   //   "MatKhauMoi": "1234567",
   //   "XacNhanMatKhau": "1234567"
   // }
-
   // Lấy dữ liệu từ client
   let payload = req.body;
 

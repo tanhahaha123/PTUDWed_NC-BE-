@@ -4,7 +4,7 @@ module.exports={
 	getTenDangKy: STK => db.query("SELECT y.TenKhachHang FROM tai_khoan_ngan_hang x, tai_khoan_khach_hang y WHERE x.SoTaiKhoan = ? AND x.idTaiKhoanKhachHang = y.idTaiKhoanKhachHang AND x.LoaiTaiKhoan = 'thanh toán'",[STK]),
 	addThongTinNguoiNhan: entity => db.query("INSERT INTO danh_sach_nguoi_nhan SET ?", entity),
 	updateThongTinNguoiNhan: entity => db.query("UPDATE danh_sach_nguoi_nhan SET ? WHERE (TenGoiNho = ? OR SoTaiKhoanNguoiNhan = ?) AND TenNganHang = ? AND SoTaiKhoan = ?",[entity,entity.TenGoiNho,entity.SoTaiKhoanNguoiNhan,entity.TenNganHang,entity.SoTaiKhoan]),
-    deleteThongTinNguoiNhan: STK => db.query("DELETE FROM danh_sach_nguoi_nhan WHERE SoTaiKhoanNguoiNhan = ?", STK),
+    deleteThongTinNguoiNhan: (STK1,STK2) => db.query("DELETE FROM danh_sach_nguoi_nhan WHERE SoTaiKhoanNguoiNhan = ? AND SoTaiKhoan = ?", [STK1,STK2]),
     getTaiKhoanThanhToan: STK => db.query("SELECT * FROM tai_khoan_thanh_toan WHERE SoTaiKhoanThanhToan = ?", STK),
     updateSoDu: (STK,Amount) => db.query("UPDATE tai_khoan_thanh_toan SET SoDu = ? WHERE SoTaiKhoanThanhToan = ?",[Amount,STK]),
     addLichSuGiaoDich: entity => db.query("INSERT INTO lich_su_giao_dich set ?", entity),
@@ -15,5 +15,6 @@ module.exports={
     getNganHangLienKet: BankName => db.query("SELECT * FROM ngan_hang_lien_ket WHERE TenNganHang = ?", BankName),
     getGiaoDichNhacNo: (ID, STKNguon, STKDich, SoTien) => db.query("SELECT * FROM giao_dich_nhac_no WHERE MaGiaoDichNhacNo = ? AND SoTaiKhoanNguoiGui = ? AND SoTaiKhoanNguoiNhan = ? AND SoTien = ? AND TinhTrangXuLy = 0", [ID,STKDich,STKNguon,SoTien]),
     updateTinhTrangXuLy: (ID) => db.query("UPDATE giao_dich_nhac_no SET TinhTrangXuLy = 1 WHERE MaGiaoDichNhacNo = ?",ID),
-    addGiaoDichNhacNo: entity => db.query("INSERT INTO giao_dich_nhac_no set ?", entity)
+    addGiaoDichNhacNo: entity => db.query("INSERT INTO giao_dich_nhac_no set ?", entity),
+    checkThongTinNguoiNhan: entity => db.query("SELECT * FROM danh_sach_nguoi_nhan WHERE (TenGoiNho = ? OR SoTaiKhoanNguoiNhan = ?) AND TenNganHang = ? AND SoTaiKhoan = ?",[entity.TenGoiNho,entity.SoTaiKhoanNguoiNhan,entity.TenNganHang,entity.MyAccountNumber])
 };
