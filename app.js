@@ -42,7 +42,7 @@ app.use('/api/internal/debt-reminder', verify, require('./Routes/DebtReminder.ro
 //----------------------PARTNER--------------------------------
 //cho phép ngân hàng đã liên kết truy cập vào tài nguyên này
 
-app.use('/api/partner/account-bank', verify, require('./Routes/Partner_AccountBank.route'));
+app.use('/api/partner/account-bank', require('./Routes/Partner_AccountBank.route'));
 
 
 //----------------------EXTERNAL--------------------------------
