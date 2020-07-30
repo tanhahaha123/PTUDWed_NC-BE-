@@ -25,6 +25,6 @@
 		"secretKey": "sercetKey",
 		"refreshKey": "refreshKey",
 		"secretTokenLife": 30, 
-		"refreshTokenLife": 30
+		"refreshTokenLife": 300
 	}
 }
