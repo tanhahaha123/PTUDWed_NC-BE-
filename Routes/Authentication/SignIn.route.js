@@ -41,7 +41,7 @@ router.post('/',userSignInValidationRules(), validate,  async (req, res, next) =
     return res.json({ success: false, msg: 'Please select captcha' });
 
   //Secret key
-  const secretKey = '6LeTS7YZAAAAAM90bgMCjov6tjuPd_1E71nzkSeV';
+  const secretKey = '6LdkNLgZAAAAAAX0YLduaT1d9Rdvlqkdwpwj-bJ4';
 
   // Verify URL
   const query = stringify({
