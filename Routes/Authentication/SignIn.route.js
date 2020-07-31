@@ -132,7 +132,7 @@ router.post('/refresh_token', async (req, res) => {
         if (err) return res.status(400).json(err);
         let resultGetRefreshToken = await RefreshTokenModel.getRefreshToken(refreshToken);
         if (resultGetRefreshToken.length > 0) {
-          let AccessToken = jwt.sign({"idTaiKhoanKhachHang":decoded.userId}, config.AUTH.secretKey, {expiresIn: config.AUTH.secretTokenLife});
+          let AccessToken = jwt.sign({"idTaiKhoanKhachHang":decoded.idTaiKhoanKhachHang}, config.AUTH.secretKey, {expiresIn: config.AUTH.secretTokenLife});
           return res.json({ //dù sai vẫn thông báo
               "token": AccessToken
           });
