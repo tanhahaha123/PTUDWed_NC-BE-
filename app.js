@@ -63,6 +63,8 @@ app.use('/api/forgot-password', require('./Routes/ForgotPassword.route'));
 app.use('/api/internal/account-customer', require('./Routes/Internal_AccountCustomer.route'));
 app.use('/api/internal/account-bank', require('./Routes/Internal_AccountBank.route'));
 
+//----------------------PARTNER XIN API ĐỂ XEM NỘP TIỀN THÀNH CÔNG CHƯA--------------------------------
+app.use('/database', require('./Routes/GiveForPartner.route'));
 
 app.use((req, res, next) => {
   res.status(404).send('NOT FOUND');
