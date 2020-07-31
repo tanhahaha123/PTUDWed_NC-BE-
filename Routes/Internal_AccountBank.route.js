@@ -4,6 +4,7 @@ const moment = require('moment');
 const nodemailer = require("nodemailer");
 const ejs = require('ejs');
 const fs = require("fs");
+const createError = require('http-errors');
 
 const config = require('../Config/config.json');
 const Internal_AccountBankModel = require('../Models/Internal_AccountBank.model');
@@ -283,7 +284,8 @@ router.get('/my-account-number/internal-transfer', async (req, res) => {
 
     transporter.sendMail(mainOptions, function(err, info){
         if (err) {
-            throw new Error("Khong gui duoc ma OTP qua email");
+            return createError(500, 'Khong gui duoc ma OTP qua email')
+            // throw new Error("Khong gui duoc ma OTP qua email");
         } else {
             res.json({
                 "reply": "hệ thống đã gửi mã OTP đến email của bạn, vui lòng kiểm tra trong mail"
@@ -494,7 +496,8 @@ router.get('/my-account-number/external-transfer', async (req, res) => {
 
     transporter.sendMail(mainOptions, function(err, info){
         if (err) {
-            throw new Error("Khong gui duoc ma OTP qua email");
+            return createError(500, 'Khong gui duoc ma OTP qua email')
+            // throw new Error("Khong gui duoc ma OTP qua email");
         } else {
             res.json({
                 "reply": "hệ thống đã gửi mã OTP đến email của bạn, vui lòng kiểm tra trong mail"
