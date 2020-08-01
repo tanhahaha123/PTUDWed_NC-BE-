@@ -33,7 +33,7 @@ app.use('/api/admin/transaction', require('./Routes/Admin/Transaction.route'));
 
 app.use('/api/auth/signin',  require('./Routes/Authentication/SignIn.route'));
 app.use('/api/auth/signup', require('./Routes/Authentication/SignUp.route'));
-app.use('/api/auth/change-password', require('./Routes/Authentication/ChangePassword.route'));
+app.use('/api/auth/change-password', verify, require('./Routes/Authentication/ChangePassword.route'));
 
 app.use('/api/auth/refresh-token', require('./Routes/Authentication/RefreshToken.route'));
 
@@ -47,7 +47,7 @@ app.use('/api/partner/account-bank', require('./Routes/Partner_AccountBank.route
 
 //----------------------EXTERNAL--------------------------------
 //gọi tài nguyên API tới ngân hàng khác
-app.use('/api/external/account-bank', require('./Routes/External_AccountBank.route'));
+app.use('/api/external/account-bank', verify, require('./Routes/External_AccountBank.route'));
 
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây
@@ -60,8 +60,8 @@ app.use('/api/internal/transaction',verify, require('./Routes/TransactionHistory
 // app.use('/login', require('./Routes/login.route'));
 // app.use('/logout', require('./Routes/logout.route'));
 app.use('/api/forgot-password', require('./Routes/ForgotPassword.route'));
-app.use('/api/internal/account-customer', require('./Routes/Internal_AccountCustomer.route'));
-app.use('/api/internal/account-bank', require('./Routes/Internal_AccountBank.route'));
+app.use('/api/internal/account-customer', verify, require('./Routes/Internal_AccountCustomer.route'));
+app.use('/api/internal/account-bank', verify, require('./Routes/Internal_AccountBank.route'));
 
 //----------------------PARTNER XIN API ĐỂ XEM NỘP TIỀN THÀNH CÔNG CHƯA--------------------------------
 app.use('/database', require('./Routes/GiveForPartner.route'));
