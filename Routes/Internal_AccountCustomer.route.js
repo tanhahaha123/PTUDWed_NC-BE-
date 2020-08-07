@@ -135,4 +135,47 @@ router.get('/my-account-customer/get-bank-partner', async (req, res) => {
     res.json(result);
 });
 
+router.get('/my-account-customer/payment-account-detail', async (req, res) => {
+    let payload = {};
+    payload.idTaiKhoanKhachHang = req.query.idTaiKhoanKhachHang;
+    // payload = {
+    //     "idTaiKhoanKhachHang":3
+    // }
+
+    if (isNaN(payload.idTaiKhoanKhachHang) || (payload.idTaiKhoanKhachHang == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường idTaiKhoanKhachHang, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let DanhSachTaiKhoanThanhToanChiTiet = await Internal_AccountCustomerModel.getTaiKhoanThanhToanChiTiet(payload.idTaiKhoanKhachHang);
+    if (DanhSachTaiKhoanThanhToanChiTiet.length === 0) return res.status(400).json({
+        err: 'idTaiKhoanKhachHang not found'
+    });
+
+    res.json(DanhSachTaiKhoanThanhToanChiTiet);
+});
+
+router.get('/my-account-customer/saving-account-detail', async (req, res) => {
+    let payload = {};
+    payload.idTaiKhoanKhachHang = req.query.idTaiKhoanKhachHang;
+    // payload = {
+    //     "idTaiKhoanKhachHang":3
+    // }
+
+    if (isNaN(payload.idTaiKhoanKhachHang) || (payload.idTaiKhoanKhachHang == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường idTaiKhoanKhachHang, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let DanhSachTaiKhoanTietKiemChiTiet = await Internal_AccountCustomerModel.getTaiKhoanTietKiemChiTiet(payload.idTaiKhoanKhachHang);
+    if (DanhSachTaiKhoanTietKiemChiTiet.length === 0) return res.status(400).json({
+        err: 'idTaiKhoanKhachHang not found'
+    });
+
+    res.json(DanhSachTaiKhoanTietKiemChiTiet);
+});
+
+
 module.exports=router;
