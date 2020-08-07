@@ -13,8 +13,11 @@ module.exports={
     getOTPCode: (STK,OTPCode) => db.query("SELECT * FROM otp_code WHERE SoTaiKhoan = ? AND OTPCode = ?", [STK,OTPCode]),
     getKhachHang: STK => db.query("SELECT y.* FROM tai_khoan_ngan_hang x, tai_khoan_khach_hang y WHERE x.SoTaiKhoan = ? AND x.idTaiKhoanKhachHang = y.idTaiKhoanKhachHang AND x.LoaiTaiKhoan = 'thanh toán'",[STK]),
     getNganHangLienKet: BankName => db.query("SELECT * FROM ngan_hang_lien_ket WHERE TenNganHang = ?", BankName),
-    getGiaoDichNhacNo: (ID, STKNguon, STKDich, SoTien) => db.query("SELECT * FROM giao_dich_nhac_no WHERE MaGiaoDichNhacNo = ? AND SoTaiKhoanNguoiGui = ? AND SoTaiKhoanNguoiNhan = ? AND SoTien = ? AND TinhTrangXuLy = 0", [ID,STKDich,STKNguon,SoTien]),
+    getGiaoDichNhacNo: (ID, STK1, STK2,TinhTrangXuLy) => db.query("SELECT * FROM giao_dich_nhac_no WHERE MaGiaoDichNhacNo = ? AND ((SoTaiKhoanNguoiGui= ? AND SoTaiKhoanNguoiNhan = ?) OR (SoTaiKhoanNguoiGui= ? AND SoTaiKhoanNguoiNhan = ?)) AND TinhTrangXuLy = ?", [ID,STK1,STK2,STK2,STK1,TinhTrangXuLy]),
     updateTinhTrangXuLy: (ID) => db.query("UPDATE giao_dich_nhac_no SET TinhTrangXuLy = 1 WHERE MaGiaoDichNhacNo = ?",ID),
     addGiaoDichNhacNo: entity => db.query("INSERT INTO giao_dich_nhac_no set ?", entity),
-    checkThongTinNguoiNhan: entity => db.query("SELECT * FROM danh_sach_nguoi_nhan WHERE (TenGoiNho = ? OR SoTaiKhoanNguoiNhan = ?) AND TenNganHang = ? AND SoTaiKhoan = ?",[entity.TenGoiNho,entity.SoTaiKhoanNguoiNhan,entity.TenNganHang,entity.MyAccountNumber])
+    checkThongTinNguoiNhan: entity => db.query("SELECT * FROM danh_sach_nguoi_nhan WHERE (TenGoiNho = ? OR SoTaiKhoanNguoiNhan = ?) AND TenNganHang = ? AND SoTaiKhoan = ?",[entity.TenGoiNho,entity.SoTaiKhoanNguoiNhan,entity.TenNganHang,entity.MyAccountNumber]),
+    getLichSuNhacNo: STK => db.query("SELECT * FROM giao_dich_nhac_no WHERE SoTaiKhoanNguoiGui= ? OR SoTaiKhoanNguoiNhan = ?",[STK,STK]),
+    getNhacNoChuaThanhToan: STK => db.query("SELECT * FROM giao_dich_nhac_no WHERE SoTaiKhoanNguoiNhan = ? AND TinhTrangXuLy = 0",[STK]),
+    getNhacNoDaTao: STK => db.query("SELECT * FROM giao_dich_nhac_no WHERE SoTaiKhoanNguoiGui = ? AND TinhTrangXuLy = 0",[STK])
 };

@@ -619,9 +619,227 @@ router.post('/my-account-number/external-transfer', ExternalOTPVerify, async (re
 
 });
 
+router.get('/my-account-number/history-debt', async (req,res)=>{ //Liệt kê lịch sử nhắc nợ
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    // payload = {
+    //     "MyAccountNumber":147147147,
+    // }
+
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let TaiKhoanThanhToanNguon = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
+    if (TaiKhoanThanhToanNguon.length === 0) return res.status(400).json({
+        err: 'MyAccountNumber not found'
+    });
+
+    let result = await Internal_AccountBankModel.getLichSuNhacNo(payload.MyAccountNumber);
+
+    res.json(result);
+});
+
+router.get('/my-account-number/unpaid-debt', async (req,res)=>{ //Liệt kê nhắc nợ chưa thanh toán
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    // payload = {
+    //     "MyAccountNumber":147147147,
+    // }
+
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let TaiKhoanThanhToanNguon = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
+    if (TaiKhoanThanhToanNguon.length === 0) return res.status(400).json({
+        err: 'MyAccountNumber not found'
+    });
+
+    let result = await Internal_AccountBankModel.getNhacNoChuaThanhToan(payload.MyAccountNumber);
+
+    res.json(result);
+});
+
+router.get('/my-account-number/created-debt', async (req,res)=>{ //Liệt kê nhắc nợ đã tạo
+    let payload = {};
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    // payload = {
+    //     "MyAccountNumber":147147147,
+    // }
+
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let TaiKhoanThanhToanNguon = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
+    if (TaiKhoanThanhToanNguon.length === 0) return res.status(400).json({
+        err: 'MyAccountNumber not found'
+    });
+
+    let result = await Internal_AccountBankModel.getNhacNoDaTao(payload.MyAccountNumber);
+
+    res.json(result);
+});
+
+router.post('/my-account-number/debts-create', async (req,res)=>{ //Tạo nhắc nợ
+    let payload = req.body;
+    // payload = {
+    //     "MyAccountNumber":147147147,
+    //     "DestinationAccountNumber":123123123,
+    //     "Amount":250000,
+    //     "Message":"Trả tiền nợ tháng 4"
+    // }
+
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    if (isNaN(payload.DestinationAccountNumber) || (payload.DestinationAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường DestinationAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    if (isNaN(payload.Amount) || (payload.Amount == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường Amount, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    if (payload.Message == null) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường Message, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    payload.MyAccountNumber = +payload.MyAccountNumber;
+    payload.DestinationAccountNumber = +payload.DestinationAccountNumber;
+    payload.Amount = +payload.Amount;
+
+    let TaiKhoanThanhToanNguon = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
+    if (TaiKhoanThanhToanNguon.length === 0) return res.status(400).json({
+        err: 'MyAccountNumber not found'
+    });
+
+    let TaiKhoanThanhToanDich = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.DestinationAccountNumber);
+    if (TaiKhoanThanhToanDich.length === 0) return res.status(400).json({
+        err: 'DestinationAccountNumber not found'
+    });
+
+    let ts = moment().valueOf();
+
+    let rowGiaoDichNhacNo = {
+        "MaGiaoDichNhacNo": payload.MyAccountNumber+'_'+ts,
+        "SoTaiKhoanNguoiGui": payload.MyAccountNumber,
+        "SoTaiKhoanNguoiNhan": payload.DestinationAccountNumber,
+        "NgayGiaoDich": moment(ts).format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
+        "SoTien": payload.Amount,
+        "NoiDung": payload.Message,
+        "LoaiGiaoDich": "đã tạo",
+        "TinhTrangXuLy": 0
+    };
+
+    let resultAdd = await Internal_AccountBankModel.addGiaoDichNhacNo(rowGiaoDichNhacNo);
+    if (resultAdd.affectedRows===0) return createError(500, "Khong them moi duoc nhac no");
+
+    res.status(201).json({});
+});
+
+router.post('/my-account-number/debts-delete', async (req,res)=>{ //Hủy nhắc nợ
+    let payload = req.body;
+    // payload = {
+    //     "DebtsID":"147147147_5648585245",
+    //     "MyAccountNumber":123123123,
+    //     "DestinationAccountNumber":147147147,
+    //     "Message":"Tôi không nợ"
+    // }
+
+    // payload = {
+    //     "DebtsID":"147147147_5648585245",
+    //     "MyAccountNumber":147147147,
+    //     "DestinationAccountNumber":123123123,
+    //     "Message":"gửi nhắc nợ nhầm"
+    // }
+
+    if (payload.DebtsID == null) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường DebtsID, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    if (isNaN(payload.DestinationAccountNumber) || (payload.DestinationAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường DestinationAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    if (payload.Message == null) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường Message, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    payload.MyAccountNumber = +payload.MyAccountNumber;
+    payload.DestinationAccountNumber = +payload.DestinationAccountNumber;
+
+    let TaiKhoanThanhToanNguon = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
+    if (TaiKhoanThanhToanNguon.length === 0) return res.status(400).json({
+        err: 'MyAccountNumber not found'
+    });
+
+    let TaiKhoanThanhToanDich = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.DestinationAccountNumber);
+    if (TaiKhoanThanhToanDich.length === 0) return res.status(400).json({
+        err: 'DestinationAccountNumber not found'
+    });
+
+    let resultGetDebts = await Internal_AccountBankModel.getGiaoDichNhacNo(payload.DebtsID, payload.MyAccountNumber, payload.DestinationAccountNumber,0);
+    if ((resultGetDebts.length === 0)||(resultGetDebts.TinhTrangXuLy===1)) return res.status(400).json({
+        err: 'Không tồn tại giao dịch này'
+    });
+
+    let ts = moment().valueOf();
+
+    let rowGiaoDichNhacNo = {
+        "MaGiaoDichNhacNo": payload.DebtsID,
+        "SoTaiKhoanNguoiGui": payload.MyAccountNumber,
+        "SoTaiKhoanNguoiNhan": payload.DestinationAccountNumber,
+        "NgayGiaoDich": moment(ts).format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
+        "SoTien": resultGetDebts[0].SoTien,
+        "NoiDung": payload.Message,
+        "LoaiGiaoDich": "đã hủy",
+        "TinhTrangXuLy": 1
+    };
+
+    let resultAdd = await Internal_AccountBankModel.addGiaoDichNhacNo(rowGiaoDichNhacNo);
+    if (resultAdd.affectedRows===0) return createError(500, "Khong huy duoc giao dich nhac no co DebtsID = "+rowGiaoDichNhacNo.DebtsID);
+    let resultUpdate = await Internal_AccountBankModel.updateTinhTrangXuLy(payload.DebtsID);
+
+    res.json({"reply":"Hủy nhắc nợ thành công"});
+});
+
 //Thanh toán nhắc nợ của tài khoản "my-account-number" cho nhắc nợ có MaGiaoDichNhacNo: #123123123_5648585245 (lấy mã OTP)
 router.get('/my-account-number/debts-payment', async (req, res) => {
-    let payload = req.body;
+    let payload = {};
+    payload.DebtsID = req.query.DebtsID;
+    payload.MyAccountNumber = req.query.MyAccountNumber;
+    payload.DestinationAccountNumber = req.query.DestinationAccountNumber;
+    payload.Amount = req.query.Amount;
+    payload.Message = req.query.Message;
     // payload = {
     //     "DebtsID":"123123123_5648585245",
     //     "MyAccountNumber":147147147,
@@ -662,7 +880,6 @@ router.get('/my-account-number/debts-payment', async (req, res) => {
 
     payload.MyAccountNumber = +payload.MyAccountNumber;
     payload.DestinationAccountNumber = +payload.DestinationAccountNumber;
-    payload.Amount = +payload.Amount;
 
     let TaiKhoanThanhToanNguon = await Internal_AccountBankModel.getTaiKhoanThanhToan(payload.MyAccountNumber);
     if (TaiKhoanThanhToanNguon.length === 0) return res.status(400).json({
@@ -674,7 +891,7 @@ router.get('/my-account-number/debts-payment', async (req, res) => {
         err: 'DestinationAccountNumber not found'
     });
 
-    let resultGetDebts = await Internal_AccountBankModel.getGiaoDichNhacNo(payload.DebtsID, payload.MyAccountNumber, payload.DestinationAccountNumber, payload.Amount);
+    let resultGetDebts = await Internal_AccountBankModel.getGiaoDichNhacNo(payload.DebtsID, payload.MyAccountNumber, payload.DestinationAccountNumber,0);
     if ((resultGetDebts.length === 0)||(resultGetDebts.TinhTrangXuLy===1)) return res.status(400).json({
         err: 'Không tồn tại giao dịch này'
     });
@@ -713,7 +930,7 @@ router.get('/my-account-number/debts-payment', async (req, res) => {
         from: 'noreply.25bank@gmail.com',
         to: resultGetKhachHang[0].Email,
         subject: OTPCode +' is your OTP 25BANK code',
-        html: ejs.render(fs.readFileSync('./Config/OTPmail-template.ejs', 'utf-8'), {TenKhachHang: resultGetKhachHang[0].TenKhachHang, SoTaiKhoanNguoiNhan: payload.DestinationAccountNumber, TenChuSoHuu: resultGetKhachHang2[0].TenKhachHang, TenNganHang: "25Bank", SoTien: formatCurrency(payload.Amount.toString()), OTPCode: OTPCode})
+        html: ejs.render(fs.readFileSync('./Config/OTPmail-template.ejs', 'utf-8'), {TenKhachHang: resultGetKhachHang[0].TenKhachHang, SoTaiKhoanNguoiNhan: payload.DestinationAccountNumber, TenChuSoHuu: resultGetKhachHang2[0].TenKhachHang, TenNganHang: "25Bank", SoTien: formatCurrency(resultGetDebts[0].SoTien.toString()), OTPCode: OTPCode})
     }
 
     transporter.sendMail(mainOptions, function(err, info){
@@ -751,7 +968,7 @@ router.post('/my-account-number/debts-payment', InternalOTPVerify, async (req, r
         err: 'DestinationAccountNumber not found'
     });
 
-    let resultGetDebts = await Internal_AccountBankModel.getGiaoDichNhacNo(payload.DebtsID, payload.MyAccountNumber, payload.DestinationAccountNumber, payload.Amount);
+    let resultGetDebts = await Internal_AccountBankModel.getGiaoDichNhacNo(payload.DebtsID, payload.MyAccountNumber, payload.DestinationAccountNumber,0);
     if ((resultGetDebts.length === 0)||(resultGetDebts.TinhTrangXuLy === 1)) return res.status(400).json({
         err: 'Không tồn tại giao dịch này'
     });
@@ -760,15 +977,15 @@ router.post('/my-account-number/debts-payment', InternalOTPVerify, async (req, r
     let SoDuHienTaiNguon = TaiKhoanThanhToanNguon[0].SoDu;
     let SoDuHienTaiDich = TaiKhoanThanhToanDich[0].SoDu;
 
-    if ((SoDuHienTaiNguon-config.BANK.MinimumBalance) < (payload.Amount+FeeNguon)) { //MinimumBalance xác định trong tài khoản phải có ít nhất 50 nghìn đồng và không được giao dịch với số tiền này
+    if ((SoDuHienTaiNguon-config.BANK.MinimumBalance) < (resultGetDebts[0].SoTien+FeeNguon)) { //MinimumBalance xác định trong tài khoản phải có ít nhất 50 nghìn đồng và không được giao dịch với số tiền này
         return res.status(406).json({
             err: 'Xin lỗi, số dư không đủ để thực hiện giao dịch này, sau giao dịch phải có ít nhất 50.000 đồng',
             CurrentBalance: SoDuHienTaiNguon
         })
     }
 
-    let resultUpdateNguon = await Internal_AccountBankModel.updateSoDu(payload.MyAccountNumber,SoDuHienTaiNguon-payload.Amount-FeeNguon);
-    let resultUpdateDich = await Internal_AccountBankModel.updateSoDu(payload.DestinationAccountNumber,SoDuHienTaiDich+payload.Amount);
+    let resultUpdateNguon = await Internal_AccountBankModel.updateSoDu(payload.MyAccountNumber,SoDuHienTaiNguon-resultGetDebts[0].SoTien-FeeNguon);
+    let resultUpdateDich = await Internal_AccountBankModel.updateSoDu(payload.DestinationAccountNumber,SoDuHienTaiDich+resultGetDebts[0].SoTien);
 
     if ((resultUpdateNguon.affectedRows!==0)&&(resultUpdateDich.affectedRows!==0)) res.json({
         reply: "Giao dịch thanh toán nhắc nợ thành công"
@@ -784,7 +1001,7 @@ router.post('/my-account-number/debts-payment', InternalOTPVerify, async (req, r
         "MaGiaoDich": payload.MyAccountNumber+'_'+ts,
         "SoTaiKhoanGiaoDich": payload.MyAccountNumber,
         "NgayGiaoDich": moment(ts).format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
-        "SoTien": payload.Amount,
+        "SoTien": resultGetDebts[0].SoTien,
         "NoiDung": payload.Message,
         "GiaoDichVoiSoTK": payload.DestinationAccountNumber,
         "ThongTinNguoiGui": resultTenDangKy[0].TenKhachHang,
@@ -803,7 +1020,7 @@ router.post('/my-account-number/debts-payment', InternalOTPVerify, async (req, r
         "SoTaiKhoanNguoiGui": payload.MyAccountNumber,
         "SoTaiKhoanNguoiNhan": payload.DestinationAccountNumber,
         "NgayGiaoDich": moment(ts).format("YYYY-MM-DD HH:mm:ss.SSS"), //thời điểm hiện tại
-        "SoTien": payload.Amount,
+        "SoTien": resultGetDebts[0].SoTien,
         "NoiDung": payload.Message,
         "LoaiGiaoDich": "đã thanh toán",
         "TinhTrangXuLy": 1
