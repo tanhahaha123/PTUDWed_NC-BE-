@@ -149,7 +149,7 @@ module.exports.getExternalInfoAccount = async (payload) => {
 
             let option = {
                 method: 'POST',
-                url: 'https://internet-banking-30.herokuapp.com/api/account/info',
+                url: 'http://13.250.20.250:9807/api/account/info',
                 headers: {
                     "Partner-Code":"Bank25"
                 },
@@ -319,10 +319,10 @@ module.exports.rechargeExternalAccount = async (payload) => {
         }
         case "37Bank":
         {
-            let bankNumber = "370001";
+            let bankNumber = payload.DestinationAccountNumber.toString();
             let requestId = bankNumber+moment().valueOf().toString().slice(4,-3);
-            let amount = "20000";
-            let message = "trả tiền chụp ảnhgggggggggggdfffffffffffffffffff";
+            let amount = payload.Amount;
+            let message = payload.Message;
             let rawMessage = bankNumber+requestId+amount+message;
             let signature = MyBank_PrivateKeyObject.sign(rawMessage,'base64');
 
@@ -352,6 +352,48 @@ module.exports.rechargeExternalAccount = async (payload) => {
             }
 
             if (resultRequest.response.statusCode===200) return {StatusCode:200, json: {"reply": "Giao dịch chuyển khoản thành công"}};
+            else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
+
+            break;
+        }
+        case "30Bank":
+        {
+            const { keys: [privateKey_me] } = await openpgp.key.readArmored(MyBank_privateKeyArmoredPGP);
+            await privateKey_me.decrypt(passphrasePGP);
+
+            const reqBody = {"account_number":payload.DestinationAccountNumber.toString(),"request_time":moment().valueOf(),"amount":payload.Amount};
+
+            const { data: encrypted } = await openpgp.encrypt({
+                message: openpgp.message.fromText(JSON.stringify(reqBody)),                 // input as Message object
+                publicKeys: (await openpgp.key.readArmored(PartnerBank_publicKeyArmoredPGP)).keys, // for encryption
+                privateKeys: [privateKey_me]                                           // for signing (optional)
+            });
+
+            let option = {
+                method: 'POST',
+                url: 'http://13.250.20.250:9807/api/account/recharge',
+                headers: {
+                    "Partner-Code":"Bank25"
+                },
+                json: {"message":encrypted}
+            };
+            let resultRequest;
+            try {
+                resultRequest = await doRequest(option);
+            } catch(err) {
+                return {StatusCode:503, json:{"reply": "Dịch vụ của ngân hàng liên kết không sẵn có"}};
+            }
+
+            try {
+                resultRequest.body = JSON.parse(resultRequest.body);
+            } catch(err){
+                //ignore
+            }
+
+            if (resultRequest.response.statusCode===200) {
+                if (resultRequest.body.code===0) return {StatusCode:200, json: {"reply": "Giao dịch chuyển khoản thành công"}};
+                else return {StatusCode: 200, json: resultRequest.body};
+            }
             else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
 
             break;

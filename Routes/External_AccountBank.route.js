@@ -123,7 +123,7 @@ router.get('/destination-account', async (req, res) => {
 
             request({
                 method: 'POST',
-                url: 'https://internet-banking-30.herokuapp.com/api/account/info',
+                url: 'http://13.250.20.250:9807/api/account/info',
                 headers: {
                     "Partner-Code":"Bank25"
                 },
