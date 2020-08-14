@@ -27,7 +27,7 @@ app.get('/apidoc',(req,res)=>{
 
 
 app.use('/api/admin', require('./Routes/Admin/EmployeeManagement.route'));
-app.use('/api/admin/transaction', require('./Routes/Admin/Transaction.route'));
+app.use('/api/admin/transactions', require('./Routes/Admin/Transaction.route'));
 
 //------------------------AUTHENTICATION--------------------------------
 
