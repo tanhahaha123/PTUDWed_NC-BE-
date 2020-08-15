@@ -24,7 +24,7 @@ router.use(bodyParser.text());
 
 // const tokenList ={};
 
-//Đăng nhập
+//Đăng nhập cho user
 router.post('/',userSignInValidationRules(), validate,  async (req, res, next) => {
 
   // payload = {
@@ -101,6 +101,95 @@ router.post('/',userSignInValidationRules(), validate,  async (req, res, next) =
   const dataReturn = {
     "SourceAccountNumber": ret.SoTaiKhoan,
     "TenKhachHang": ret.TenKhachHang
+  }
+  //Tra ve token
+  // authenticated: true,
+  return res.json({
+    success: true, 
+    response: response,
+    ...dataReturn,
+    msg: 'Đăng nhập thành công'
+  });
+ 
+});
+
+//Đăng nhập cho user
+router.post('/admin',userSignInValidationRules(), validate,  async (req, res, next) => {
+
+  // payload = {
+  //   "TenDangNhap": "myaccount",
+  //   "MatKhau": "123456",
+  //   "captcha": "345jfdgdfgdfglfdgdfg"
+  // }
+
+  // Lấy dữ liệu
+  let payload = req.body;
+
+  //Kiem tra captcha rong
+  if (!payload.captcha)
+    return res.json({ success: false, msg: 'Please select captcha' });
+
+  //Secret key
+  const secretKey = '6LdkNLgZAAAAAAX0YLduaT1d9Rdvlqkdwpwj-bJ4';
+
+  // Verify URL
+  const query = stringify({
+    secret: secretKey,
+    response: req.body.captcha,
+    remoteip: req.connection.remoteAddress
+  });
+  
+  const verifyURL = `https://google.com/recaptcha/api/siteverify?${query}`;
+
+  // Make a request to verifyURL
+  const body = await fetch(verifyURL).then(res => res.json());
+
+  // If not successful
+  if (body.success !== undefined && !body.success)
+    return res.json({ success: false, msg: 'Failed captcha verification' });
+
+  const ret = await signInModel.loginAdmin(req.body);
+
+  //Nếu không có dữ liệu trả về
+  if (ret === null) {
+    return res.json({
+      success: false,
+      authenticated: false,
+      msg: "Tên đăng nhập hoặc tài khoản không đúng"
+    })
+  }
+  //console.log("khachhang*nganhang:", ret);
+  //Ngược lại có dữ liệu trả về
+  const payload1 = {
+    "idTaiKhoanNhanVien": ret.idTaiKhoanNhanVien,
+  }
+
+  //Tao token
+  const accessToken = jwt.sign(payload1, config.AUTH.secretKey, {
+    expiresIn: config.AUTH.secretTokenLife
+  })
+
+   // Tạo một mã token khác - Refresh token
+   const refreshToken = jwt.sign(payload1, config.AUTH.refreshKey, {
+    expiresIn: config.AUTH.refreshTokenLife
+  });
+  // Lưu lại mã Refresh token, kèm thông tin của user để sau này sử dụng lại
+  // tokenList[refreshToken] = payload1;
+  // let resultDeleteRefreshToken = await RefreshTokenModel.deleteRefreshToken(ret.idTaiKhoanKhachHang);
+  // let rowRefreshToken = {
+  //     "idTaiKhoanKhachHang": ret.idTaiKhoanKhachHang,
+  //     "RefreshToken": refreshToken
+  // };
+  // let resultAddRefreshToken = await RefreshTokenModel.addRefreshToken(rowRefreshToken);
+  // Trả lại cho user thông tin mã token kèm theo mã Refresh token
+  const response = {
+    accessToken,
+    refreshToken,
+  }
+
+  const dataReturn = {
+    "SourceAccountNumber": ret.SoTaiKhoan,
+    "TenNhanVien": ret.TenNhanVien
   }
   //Tra ve token
   // authenticated: true,
