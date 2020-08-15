@@ -29,7 +29,7 @@ module.exports = {
     }
     return null;
   },
-  loginAdmin: async entity => {
+  loginEmployee: async entity => {
     
     // entity = {
     //   "TenDangNhap": "MyAccount",

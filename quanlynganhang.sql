@@ -379,6 +379,19 @@ CREATE TABLE `refresh_token` (
   `RefreshToken` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `refresh_token`
+--
+
+CREATE TABLE `refresh_token_employee` (
+  `idRefreshToken` int(11) NOT NULL,
+  `idTaiKhoanKhachHang` int(11) NOT NULL,
+  `RefreshToken` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -480,6 +493,13 @@ ALTER TABLE `forgot_password_otp_code`
 ALTER TABLE `refresh_token`
   ADD PRIMARY KEY (`idRefreshToken`);
 
+
+--
+-- Chỉ mục cho bảng `refresh_token`
+--
+ALTER TABLE `refresh_token_employee`
+  ADD PRIMARY KEY (`idRefreshToken`);
+
 --
 -- AUTO_INCREMENT cho các bảng đã đổ
 --
@@ -563,7 +583,15 @@ ALTER TABLE `forgot_password_otp_code`
 ALTER TABLE `refresh_token`
   MODIFY `idRefreshToken` int(11) NOT NULL AUTO_INCREMENT;
   
+
+--
+-- AUTO_INCREMENT cho bảng `refresh_token`
+--
+
+ALTER TABLE `refresh_token_employee`
+  MODIFY `idRefreshToken` int(11) NOT NULL AUTO_INCREMENT;
   
+
 --
 -- Các ràng buộc cho các bảng đã đổ
 --
