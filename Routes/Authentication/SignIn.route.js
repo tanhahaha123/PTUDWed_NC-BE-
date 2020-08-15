@@ -113,14 +113,8 @@ router.post('/',userSignInValidationRules(), validate,  async (req, res, next) =
  
 });
 
-//Đăng nhập cho user
-router.post('/admin',userSignInValidationRules(), validate,  async (req, res, next) => {
-
-  // payload = {
-  //   "TenDangNhap": "myaccount",
-  //   "MatKhau": "123456",
-  //   "captcha": "345jfdgdfgdfglfdgdfg"
-  // }
+//Đăng nhập cho employee
+router.post('/employee',userSignInValidationRules(), validate,  async (req, res, next) => {
 
   // Lấy dữ liệu
   let payload = req.body;
@@ -148,7 +142,7 @@ router.post('/admin',userSignInValidationRules(), validate,  async (req, res, ne
   if (body.success !== undefined && !body.success)
     return res.json({ success: false, msg: 'Failed captcha verification' });
 
-  const ret = await signInModel.loginAdmin(req.body);
+  const ret = await signInModel.loginEmployee(req.body);
 
   //Nếu không có dữ liệu trả về
   if (ret === null) {
@@ -174,13 +168,12 @@ router.post('/admin',userSignInValidationRules(), validate,  async (req, res, ne
     expiresIn: config.AUTH.refreshTokenLife
   });
   // Lưu lại mã Refresh token, kèm thông tin của user để sau này sử dụng lại
-  // tokenList[refreshToken] = payload1;
-  // let resultDeleteRefreshToken = await RefreshTokenModel.deleteRefreshToken(ret.idTaiKhoanKhachHang);
-  // let rowRefreshToken = {
-  //     "idTaiKhoanKhachHang": ret.idTaiKhoanKhachHang,
-  //     "RefreshToken": refreshToken
-  // };
-  // let resultAddRefreshToken = await RefreshTokenModel.addRefreshToken(rowRefreshToken);
+  let resultDeleteRefreshToken = await RefreshTokenModel.deleteRefreshTokenEmployee(ret.idTaiKhoanNhanVien);
+  let rowRefreshToken = {
+      "idTaiKhoanNhanVien": ret.idTaiKhoanNhanVien,
+      "RefreshToken": refreshToken
+  };
+  let resultAddRefreshToken = await RefreshTokenModel.addRefreshTokenEmployee(rowRefreshToken);
   // Trả lại cho user thông tin mã token kèm theo mã Refresh token
   const response = {
     accessToken,
@@ -188,7 +181,6 @@ router.post('/admin',userSignInValidationRules(), validate,  async (req, res, ne
   }
 
   const dataReturn = {
-    "SourceAccountNumber": ret.SoTaiKhoan,
     "TenNhanVien": ret.TenNhanVien
   }
   //Tra ve token
@@ -202,70 +194,100 @@ router.post('/admin',userSignInValidationRules(), validate,  async (req, res, ne
  
 });
 
-/**
- * Lấy mã token mới sử dụng Refresh token
- * POST /refresh_token
- */
-router.post('/refresh_token', async (req, res) => {
-  // User gửi mã Refresh token kèm theo trong body
-  const { refreshToken } = req.body;
-  const refreshTokenInDB = await RefreshTokenModel.getRefreshToken(refreshToken);
-  //console.log("refreshTokenInDB: ", refreshTokenInDB);
-  // Kiểm tra Refresh token có được gửi kèm và mã này có tồn tại trên hệ thống hay không
-  if ((refreshToken) && (refreshTokenInDB.length!=0)) {
-    // try {
-      // Kiểm tra mã Refresh token
-      //await utils.verifyJwtToken(refreshToken, config.AUTH.refreshKey);
+// /**
+//  * Lấy mã token mới sử dụng Refresh token
+//  * POST /refresh_token
+//  */
+// router.post('/refresh_token', async (req, res) => {
+//   // User gửi mã Refresh token kèm theo trong body
+//   const { refreshToken } = req.body;
+//   const refreshTokenInDB = await RefreshTokenModel.getRefreshToken(refreshToken);
+//   //console.log("refreshTokenInDB: ", refreshTokenInDB);
+//   // Kiểm tra Refresh token có được gửi kèm và mã này có tồn tại trên hệ thống hay không
+//   if ((refreshToken) && (refreshTokenInDB.length!=0)) {
+//     // try {
+//       // Kiểm tra mã Refresh token
+//       //await utils.verifyJwtToken(refreshToken, config.AUTH.refreshKey);
 
-      jwt.verify(refreshToken, config.AUTH.refreshKey, async function(err, decoded) {
-        if (err) return res.status(400).json(err);
-        let resultGetRefreshToken = await RefreshTokenModel.getRefreshToken(refreshToken);
-        if (resultGetRefreshToken.length > 0) {
-          let AccessToken = jwt.sign({"idTaiKhoanKhachHang":decoded.idTaiKhoanKhachHang}, config.AUTH.secretKey, {expiresIn: config.AUTH.secretTokenLife});
-          return res.json({ //dù sai vẫn thông báo
-              "token": AccessToken
-          });
-        }
-        else 
-        {
-          return res.status(400).json({
-              err: 'RefreshToken không tồn tại'
-          });
-        }
-      });
+//       jwt.verify(refreshToken, config.AUTH.refreshKey, async function(err, decoded) {
+//         if (err) return res.status(400).json(err);
+//         let resultGetRefreshToken = await RefreshTokenModel.getRefreshToken(refreshToken);
+//         if (resultGetRefreshToken.length > 0) {
+//           let AccessToken = jwt.sign({"idTaiKhoanKhachHang":decoded.idTaiKhoanKhachHang}, config.AUTH.secretKey, {expiresIn: config.AUTH.secretTokenLife});
+//           return res.json({ //dù sai vẫn thông báo
+//               "token": AccessToken
+//           });
+//         }
+//         else 
+//         {
+//           return res.status(400).json({
+//               err: 'RefreshToken không tồn tại'
+//           });
+//         }
+//       });
       
-    //   const payload1 = {
-    //     "idTaiKhoanKhachHang": refreshTokenInDB.idTaiKhoanKhachHang,
-    //   }
-    //   // Lấy lại thông tin user
-    //   // Tạo mới mã token và trả lại cho user
-    //   const token = jwt.sign(payload1, config.AUTH.secretKey, {
-    //     expiresIn: config.AUTH.secretTokenLife
-    //   });
-    //   const response = {
-    //     token
-    //   }
-    //   res.status(200).json(response.token);
-    // } catch (err) {
-    //   console.error(err);
-    //   res.status(403).json({
-    //     message: 'Invalid refresh token',
-    //   });
-    // }
-  } else {
-    res.status(400).json({
-      message: 'Invalid request',
-    });
-  }
-});
+//     //   const payload1 = {
+//     //     "idTaiKhoanKhachHang": refreshTokenInDB.idTaiKhoanKhachHang,
+//     //   }
+//     //   // Lấy lại thông tin user
+//     //   // Tạo mới mã token và trả lại cho user
+//     //   const token = jwt.sign(payload1, config.AUTH.secretKey, {
+//     //     expiresIn: config.AUTH.secretTokenLife
+//     //   });
+//     //   const response = {
+//     //     token
+//     //   }
+//     //   res.status(200).json(response.token);
+//     // } catch (err) {
+//     //   console.error(err);
+//     //   res.status(403).json({
+//     //     message: 'Invalid refresh token',
+//     //   });
+//     // }
+//   } else {
+//     res.status(400).json({
+//       message: 'Invalid request',
+//     });
+//   }
+// });
 
+// /**
+//  * Lấy mã token mới sử dụng Refresh token cho Employee
+//  * POST /refresh_token
+//  */
+// router.post('/refresh_token/employee', async (req, res) => {
+//   // User gửi mã Refresh token kèm theo trong body
+//   const { refreshToken } = req.body;
+//   const refreshTokenInDB = await RefreshTokenModel.getRefreshTokenEmployee(refreshToken);
+//   //console.log("refreshTokenInDB: ", refreshTokenInDB);
+//   // Kiểm tra Refresh token có được gửi kèm và mã này có tồn tại trên hệ thống hay không
+//   if ((refreshToken) && (refreshTokenInDB.length!=0)) {
+//     // try {
+//       // Kiểm tra mã Refresh token
+//       //await utils.verifyJwtToken(refreshToken, config.AUTH.refreshKey);
 
-// router.use(verify);
-
-// router.get('/profile', (req, res) => {
-//   // all secured routes goes here
-//   res.json(req.decoded)
-// })
+//       jwt.verify(refreshToken, config.AUTH.refreshKey, async function(err, decoded) {
+//         if (err) return res.status(400).json(err);
+//         let resultGetRefreshToken = await RefreshTokenModel.getRefreshTokenEmployee(refreshToken);
+//         if (resultGetRefreshToken.length > 0) {
+//           let AccessToken = jwt.sign({"idTaiKhoanNhanVien":decoded.idTaiKhoanNhanVien}, config.AUTH.secretKey, {expiresIn: config.AUTH.secretTokenLife});
+//           return res.json({ //dù sai vẫn thông báo
+//               "token": AccessToken
+//           });
+//         }
+//         else 
+//         {
+//           return res.status(400).json({
+//               err: 'RefreshToken không tồn tại'
+//           });
+//         }
+//       });
+//   } else {
+//     res.status(400).json({
+//       message: 'Invalid request',
+//     });
+//   }
+// });
 
 
 module.exports = router;

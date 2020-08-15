@@ -24,7 +24,7 @@
 	"AUTH":{
 		"secretKey": "sercetKey",
 		"refreshKey": "refreshKey",
-		"secretTokenLife": 30, 
-		"refreshTokenLife": 300
+		"secretTokenLife": 300, 
+		"refreshTokenLife": 3000
 	}
 }
