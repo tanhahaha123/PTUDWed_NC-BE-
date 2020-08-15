@@ -27,7 +27,7 @@ app.get('/apidoc',(req,res)=>{
 
 
 app.use('/api/admin', require('./Routes/Admin/EmployeeManagement.route'));
-app.use('/api/admin/transaction', require('./Routes/Admin/Transaction.route'));
+app.use('/api/admin/transactions', require('./Routes/Admin/Transaction.route'));
 
 //------------------------AUTHENTICATION--------------------------------
 
@@ -52,7 +52,7 @@ app.use('/api/external/account-bank', verify, require('./Routes/External_Account
 //----------------------INTERNAL--------------------------------
 //các tài nguyên API nội bộ nằm ở đây
 app.use('/api/internal/accountbank',verify, require('./Routes/AccountBank.route'));
-app.use('/api/internal/accountuser',verify, require('./Routes/AccountUser.route'));
+app.use('/api/internal/accountuser', require('./Routes/AccountUser.route'));
 
 app.use('/api/internal/paymentaccount',verify, require('./Routes/PaymentAccount.route'));
 app.use('/api/internal/savingaccount',verify, require('./Routes/SavingAccount.rotue'));

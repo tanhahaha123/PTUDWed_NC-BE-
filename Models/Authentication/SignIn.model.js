@@ -29,6 +29,32 @@ module.exports = {
     }
     return null;
   },
+  loginAdmin: async entity => {
+    
+    // entity = {
+    //   "TenDangNhap": "MyAccount",
+    //   "MatKhau": "123456",
+    // }
+    
+    // entity = {
+    //   "TenDangNhap": "myaccount1@gmail.com",
+    //   "MatKhau": "123456",
+    // }
+
+    const rows = await signUpModel.singleAdminByUserName(entity.TenDangNhap);
+    if (rows.length === 0)
+      //Khong co tai khoan
+      return null;
+    
+
+    // Đã có tài khoản
+    const hashPwd = rows[0].MatKhau;
+    if (bcrypt.compareSync(entity.MatKhau, hashPwd)) {
+      //đúng mật khẩu
+      return rows[0];
+    }
+    return null;
+  },
   changePassword: async entity =>{
     const rows = await signUpModel.singleByUserName(entity.TenDangNhap);
     if (rows.length === 0)
