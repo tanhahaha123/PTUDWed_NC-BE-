@@ -32,12 +32,6 @@ router.get('/employees/:id', async(req, res) => {
 // Thêm mới một nhân viên
 router.post('/employees', async(req, res) => {
     let payload = req.body;
-    // payload = {
-    //     "TenDangNhap": "employee3",
-    //     "MatKhau": "123456",
-    //     "Email": "accountemployee3@gmail.com",
-    //     "TenNhanVien": "Park Hangseo"
-    // }
 
     if (payload.TenDangNhap == null) {
         return res.status(400).json({
@@ -57,6 +51,27 @@ router.post('/employees', async(req, res) => {
         });
     };
 
+    let resultTenDangNhap = await employeeManagement.checkTenDangNhap(payload.TenDangNhap);
+    if(resultTenDangNhap.length!=0){
+        return res.status(400).json({
+            err: 'Tên đăng nhập đã tồn tại'
+        });
+    }
+
+    let resultSoCMND = await employeeManagement.checkSoCMND(payload.SoCMND);
+    if(resultSoCMND.length!=0){
+        return res.status(400).json({
+            err: 'Số CMND đã được đăng kí. Vui lòng thử lại với số khác'
+        });
+    }
+
+    let resultEmail = await employeeManagement.checkEmail(payload.Email);
+    if(resultEmail.length!=0){
+        return res.status(400).json({
+            err: 'Email đã được đăng kí. Vui lòng xử dụng email khác'
+        });
+    }
+
     //hash mat khau
     const hash = bcrypt.hashSync(payload.MatKhau, 8);
     payload.MatKhau = hash;
@@ -71,11 +86,13 @@ router.post('/employees', async(req, res) => {
         "NgaySinh": payload.NgaySinh? payload.NgaySinh : "1980/1/1",
         "SoDienThoai": payload.SoDienThoai? payload.SoDienThoai : '',
         "DiaChi": payload.DiaChi? payload.DiaChi : '',
-        "ChucVu": payload.ChucVu? payload.ChucVu : ''
+        "ChucVu": payload.ChucVu? payload.ChucVu : '',
+        "GhiChu": payload.GhiChu? payload.GhiChu : '',
+        "CreatedAt": new Date()
     };
 
     let resultAdd = await employeeManagement.addEmployee(rowEmployee);
-    if (resultAdd.affectedRows===0) throw new Error("Khong duoc them moi, TenDangNhap = "+rowEmployee.TenDangNhap);
+    //if (resultAdd.affectedRows===0) throw new Error("Khong duoc them moi, TenDangNhap = "+rowEmployee.TenDangNhap);
 
     let result= await employeeManagement.all();
     res.status(201).json({
@@ -84,7 +101,54 @@ router.post('/employees', async(req, res) => {
     });
 });
 
+//Chỉnh sửa (modify) 1 thông tin người nhận
+router.patch('/my-account-number/receiver-info', async (req, res) => {
+    let payload = req.body;
+    // payload = {
+    //     "MyAccountNumber":147147147, (can't modify)
+    //     "TenGoiNho":"Anh Huy Giao Do", (allow modify)
+    //     "SoTaiKhoanNguoiNhan":987987987, (allow modify)
+    //     "TenNganHang":"VIETCOMBANK" (can't modify)
+    // }
 
+    if (isNaN(payload.MyAccountNumber) || (payload.MyAccountNumber == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường MyAccountNumber, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+    if (payload.TenGoiNho == null) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường TenGoiNho, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+    if (isNaN(payload.SoTaiKhoanNguoiNhan) || (payload.SoTaiKhoanNguoiNhan == null)) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường SoTaiKhoanNguoiNhan, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+    if (payload.TenNganHang == null) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường TenNganHang, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    payload.MyAccountNumber = +payload.MyAccountNumber;
+    payload.SoTaiKhoanNguoiNhan = +payload.SoTaiKhoanNguoiNhan;
+
+    let rowDanhSachNguoiNhan = {
+        "TenGoiNho":payload.TenGoiNho,
+        "SoTaiKhoanNguoiNhan":payload.SoTaiKhoanNguoiNhan,
+        "TenNganHang":payload.TenNganHang,
+        "SoTaiKhoan":payload.MyAccountNumber
+    };
+
+    let resultUpdate = await Internal_AccountBankModel.updateThongTinNguoiNhan(rowDanhSachNguoiNhan);
+    if (resultUpdate.affectedRows===0) return res.status(503).json({
+        err: 'Không thể update, vui lòng kiểm tra đầu vào'
+    });
+
+    res.json({"reply":"Chỉnh sửa thông tin người nhận thành công"});
+});
 // Chỉnh sửa thông tin nhân viên
 router.patch('/employees', async(req, res) => {
     let payload = req.body;
@@ -197,8 +261,12 @@ router.delete('/employees', async (req, res) => {
         });
     }
 
+    let rowDeletedEmployee = {
+        "TenDangNhap": payload.TenDangNhap,
+        "DeletedAt": new Date()
+    };
 
-    let resultList = await employeeManagement.deleteEmployee(payload.TenDangNhap);
+    let resultList = await employeeManagement.deleteEmployee(rowDeletedEmployee);
 
     if (resultList.affectedRows===0) 
         return res.status(400).json({
