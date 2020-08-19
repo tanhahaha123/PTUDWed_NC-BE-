@@ -15,8 +15,8 @@
 		"MinimumRecieve": 50000,
 		"InternalFee":1000,
 		"ExternalFee":3000,
-		"OTPExpiredTime": 300,
-		"ForgotPasswordOTPExpiredTime":300
+		"OTPExpiredTime": 120,
+		"ForgotPasswordOTPExpiredTime":120
 	},
 	"PARTNER": {
 		"ExpiredTime": 300

@@ -361,7 +361,7 @@ module.exports.rechargeExternalAccount = async (payload) => {
             const { keys: [privateKey_me] } = await openpgp.key.readArmored(MyBank_privateKeyArmoredPGP);
             await privateKey_me.decrypt(passphrasePGP);
 
-            const reqBody = {"account_number":payload.DestinationAccountNumber.toString(),"request_time":moment().valueOf(),"amount":payload.Amount};
+            const reqBody = {"account_number":payload.DestinationAccountNumber.toString(),"from_account_number":payload.SourceAccountNumber.toString(),"request_time":moment().valueOf(),"amount":payload.Amount};
 
             const { data: encrypted } = await openpgp.encrypt({
                 message: openpgp.message.fromText(JSON.stringify(reqBody)),                 // input as Message object
@@ -392,7 +392,7 @@ module.exports.rechargeExternalAccount = async (payload) => {
 
             if (resultRequest.response.statusCode===200) {
                 if (resultRequest.body.code===0) return {StatusCode:200, json: {"reply": "Giao dịch chuyển khoản thành công"}};
-                else return {StatusCode: 200, json: resultRequest.body};
+                else return {StatusCode: 400, json: resultRequest.body};
             }
             else return {StatusCode: resultRequest.response.statusCode, json: resultRequest.body};
 
