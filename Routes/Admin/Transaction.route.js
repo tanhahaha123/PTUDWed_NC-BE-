@@ -14,7 +14,6 @@ router.post('/bank-name', async(req, res) => {
     //     "TenNganHang": "AGRIBANK",
     //      "DateStart": "1980/1/1",
     //      "DateEnd": "2030/1/1",
-    //      "Quarter": 1
     // }
 
     
@@ -23,7 +22,7 @@ router.post('/bank-name', async(req, res) => {
     if( payload.DateStart && payload.DateEnd)
     {
         const Start = Date.parse(payload.DateStart);
-        console.log(Start);
+        // console.log(Start);
         const End = Date.parse(payload.DateEnd);
 
         if (isNaN(Start) || (Start == null)) {
@@ -46,7 +45,7 @@ router.post('/bank-name', async(req, res) => {
     //Ki
     if (payload.TenNganHang == null) {
         return res.status(400).json({
-            err: 'Vui lòng kiểm tra lại trườngTenNganHang, sai định dạng hoặc đang bỏ trống'
+            err: 'Vui lòng kiểm tra lại trường TenNganHang, sai định dạng hoặc đang bỏ trống'
         });
     }
 
@@ -63,11 +62,11 @@ router.post('/bank-name', async(req, res) => {
         "NgayKetThuc": payload.DateEnd
     }
 
-    const resultTotalMoneyTransactions = await transaction.getTotalTransactionByBankName(payload.TenNganHang);
+    const resultTotalMoneyTransactions = await transaction.getTotalRevenueByBankName(payload.TenNganHang);
     const resultTransactions = await transaction.getTransactionByBankName(row);
     res.status(200).json({
-        Total: resultTotalMoneyTransactions[0],
-        Transactions: resultTransactions
+        total: resultTotalMoneyTransactions,
+        transactions: resultTransactions
     });
 
 });
@@ -95,6 +94,17 @@ router.get('/bank-name', async(req, res) => {
     
     //Tổng giao dịch theo từng ngân hàng
     const resultTransactions = await transaction.getTotalRevenueByBankName();
+    res.status(200).json({
+        ...resultTransactions
+    });
+
+});
+
+// Tổng tiền theo từng ngân hàng liên kết
+router.get('/all', async(req, res) => {
+    
+    //Tổng giao dịch theo từng ngân hàng
+    const resultTransactions = await transaction.getAllLichSuGiaoDich();
     res.status(200).json({
         ...resultTransactions
     });

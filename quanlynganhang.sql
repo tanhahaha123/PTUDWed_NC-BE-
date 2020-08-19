@@ -28,28 +28,28 @@ SET time_zone = "+00:00";
 -- Cấu trúc bảng cho bảng `cap_quyen`
 --
 
-CREATE TABLE `cap_quyen` (
-  `idCapQuyen` int(11) NOT NULL,
-  `idNhanVien` int(11) NOT NULL,
-  `TenQuyen` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `ChoPhep` tinyint(1) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- CREATE TABLE `cap_quyen` (
+--   `idCapQuyen` int(11) NOT NULL,
+--   `idNhanVien` int(11) NOT NULL,
+--   `TenQuyen` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+--   `ChoPhep` tinyint(1) NOT NULL DEFAULT '0'
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `cap_quyen`
 --
 
-INSERT INTO `cap_quyen` (`idCapQuyen`, `idNhanVien`, `TenQuyen`, `ChoPhep`) VALUES
-(1, 1, 'TaoTaiKhoanKhachHang', 1),
-(2, 1, 'NapTienVaoTaiKhoan', 1),
-(3, 1, 'XemLichSuGiaoDich', 1),
-(4, 1, 'QuanLyDanhSachNhanVien', 0),
-(5, 1, 'XemGiaoDichCuaNganHangKhac', 0),
-(6, 2, 'TaoTaiKhoanKhachHang', 1),
-(7, 2, 'NapTienVaoTaiKhoan', 1),
-(8, 2, 'XemLichSuGiaoDich', 1),
-(9, 2, 'QuanLyDanhSachNhanVien', 0),
-(10, 2, 'XemGiaoDichCuaNganHangKhac', 0);
+-- INSERT INTO `cap_quyen` (`idCapQuyen`, `idNhanVien`, `TenQuyen`, `ChoPhep`) VALUES
+-- (1, 1, 'TaoTaiKhoanKhachHang', 1),
+-- (2, 1, 'NapTienVaoTaiKhoan', 1),
+-- (3, 1, 'XemLichSuGiaoDich', 1),
+-- (4, 1, 'QuanLyDanhSachNhanVien', 0),
+-- (5, 1, 'XemGiaoDichCuaNganHangKhac', 0),
+-- (6, 2, 'TaoTaiKhoanKhachHang', 1),
+-- (7, 2, 'NapTienVaoTaiKhoan', 1),
+-- (8, 2, 'XemLichSuGiaoDich', 1),
+-- (9, 2, 'QuanLyDanhSachNhanVien', 0),
+-- (10, 2, 'XemGiaoDichCuaNganHangKhac', 0);
 
 -- --------------------------------------------------------
 
@@ -284,8 +284,8 @@ CREATE TABLE `tai_khoan_nhan_vien` (
 --
 
 INSERT INTO `tai_khoan_nhan_vien` (`idTaiKhoanNhanVien`, `TenDangNhap`, `MatKhau`, `Email`, `SoDienThoai`, `TenNhanVien`, `GioiTinh`, `SoCMND`, `NgaySinh`, `DiaChi`, `ChucVu`, `GhiChu`) VALUES
-(1, 'accountnhanvien1', '123456', 'accountnhanvien1@gmail.com', '0394587454', 'Nguyễn Thị Hà', 'Nữ', '145885696', '2000-02-02', '136 Ha Bà Trưng, Phường 2, Quận Thủ Đức, Tp. Hồ Chí Minh', 'Giao Dịch Viên', NULL),
-(2, 'accountnhanvien2', '123456', 'accountnhanvien2@gmail.com', '0974525412', 'Nguyễn Văn Tú', 'Nam', '165554412', '1995-06-03', '23 Xa Lộ Hà Nội, Phường 8, Quận Thủ Đức, Tp. Hồ Chí Minh', 'Giao Dịch Viên', NULL);
+(1, 'accountnhanvien1', '$2a$08$udVtfvqlsy87T8UMLGoewuwmKGr0jrxlMngh/JxUrW5xScL0Qvx1G', 'accountnhanvien1@gmail.com', '0394587454', 'Nguyễn Thị Hà', 'Nữ', '145885696', '2000-02-02', '136 Ha Bà Trưng, Phường 2, Quận Thủ Đức, Tp. Hồ Chí Minh', 'Giao Dịch Viên', NULL),
+(2, 'accountnhanvien2', '$2a$08$udVtfvqlsy87T8UMLGoewuwmKGr0jrxlMngh/JxUrW5xScL0Qvx1G', 'accountnhanvien2@gmail.com', '0974525412', 'Nguyễn Văn Tú', 'Nam', '165554412', '1995-06-03', '23 Xa Lộ Hà Nội, Phường 8, Quận Thủ Đức, Tp. Hồ Chí Minh', 'Giao Dịch Viên', NULL);
 
 -- --------------------------------------------------------
 
@@ -400,9 +400,9 @@ CREATE TABLE `refresh_token_employee` (
 --
 -- Chỉ mục cho bảng `cap_quyen`
 --
-ALTER TABLE `cap_quyen`
-  ADD PRIMARY KEY (`idCapQuyen`),
-  ADD KEY `fk_CapQuyen_TaiKhoanNhanVien_idx` (`idNhanVien`);
+-- ALTER TABLE `cap_quyen`
+--   ADD PRIMARY KEY (`idCapQuyen`),
+--   ADD KEY `fk_CapQuyen_TaiKhoanNhanVien_idx` (`idNhanVien`);
 
 --
 -- Chỉ mục cho bảng `danh_sach_nguoi_nhan`
@@ -507,8 +507,8 @@ ALTER TABLE `refresh_token_employee`
 --
 -- AUTO_INCREMENT cho bảng `cap_quyen`
 --
-ALTER TABLE `cap_quyen`
-  MODIFY `idCapQuyen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+-- ALTER TABLE `cap_quyen`
+--   MODIFY `idCapQuyen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT cho bảng `danh_sach_nguoi_nhan`
@@ -599,8 +599,8 @@ ALTER TABLE `refresh_token_employee`
 --
 -- Các ràng buộc cho bảng `cap_quyen`
 --
-ALTER TABLE `cap_quyen`
-  ADD CONSTRAINT `fk_CapQuyen_TaiKhoanNhanVien` FOREIGN KEY (`idNhanVien`) REFERENCES `tai_khoan_nhan_vien` (`idtaikhoannhanvien`);
+-- ALTER TABLE `cap_quyen`
+--   ADD CONSTRAINT `fk_CapQuyen_TaiKhoanNhanVien` FOREIGN KEY (`idNhanVien`) REFERENCES `tai_khoan_nhan_vien` (`idtaikhoannhanvien`);
 
 --
 -- Các ràng buộc cho bảng `giao_dich_nhac_no`

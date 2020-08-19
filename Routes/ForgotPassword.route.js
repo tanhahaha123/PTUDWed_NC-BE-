@@ -73,6 +73,69 @@ router.get('/get-code', async (req, res) => {
     });
 });
 
+router.post('/get-code', async (req, res) => {
+	let payload = req.body;
+	// payload = {
+    //     "TenDangNhap":"myaccount1",
+    //     "Email":"myaccount1@gmail.com"
+    // }
+
+    if (payload.TenDangNhap == null) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường TenDangNhap, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+    if (payload.Email == null) {
+        return res.status(400).json({
+            err: 'Vui lòng kiểm tra lại trường Email, sai định dạng hoặc đang bỏ trống'
+        });
+    }
+
+    let transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+            user: "noreply.25bank@gmail.com",
+            pass: "hailambank"
+        }
+    });
+
+    let OTPCode = Math.floor((Math.random() * 900000))+100000; //100000->999999
+    let resultDeleteOTP = await ForgotPasswordModel.deleteForgotPasswordOTPCode(payload.TenDangNhap,payload.Email);
+
+    let rowOTPCode = {
+        "TenDangNhap": payload.TenDangNhap,
+        "Email": payload.Email,
+        "OTPCode": OTPCode,
+        "ExpireAt": moment().valueOf()+config.BANK.ForgotPasswordOTPExpiredTime*1000
+    };
+
+    let resultGetKhachHang = await ForgotPasswordModel.getKhachHang(payload.TenDangNhap,payload.Email);
+    if (resultGetKhachHang.length === 0) return res.json({ //dù sai vẫn thông báo
+        "reply": "hệ thống đã gửi mã OTP đến email của bạn, vui lòng kiểm tra trong mail"
+    });
+
+    let resultAddOTP = await ForgotPasswordModel.addForgotPasswordOTPCode(rowOTPCode);
+    if (resultAddOTP.affectedRows===0) throw new Error("Khong them duoc ma Forgot Password OTP " +OTPCode+" (Email: "+payload.Email+") vao co so du lieu");
+
+
+    var mainOptions = { // thiết lập đối tượng, nội dung gửi mail
+        from: 'noreply.25bank@gmail.com',
+        to: payload.Email,
+        subject: OTPCode +' is your 25BANK forgot password OTP code',
+        html: ejs.render(fs.readFileSync('./Config/ForgotPasswordOTPmail-template.ejs', 'utf-8'), {TenKhachHang: resultGetKhachHang[0].TenKhachHang, OTPCode: OTPCode})
+    }
+
+    transporter.sendMail(mainOptions, function(err, info){
+        if (err) {
+            throw new Error("Khong gui duoc ma OTP qua email");
+        } else {
+            res.json({
+                "reply": "hệ thống đã gửi mã OTP đến email của bạn, vui lòng kiểm tra trong mail"
+            });
+        }
+    });
+});
+
 router.post('/check-code', async (req, res) => {
     let payload = req.body;
     // payload = {
